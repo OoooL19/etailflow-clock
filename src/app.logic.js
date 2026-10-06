@@ -1,6 +1,27 @@
 const DICT = {
   loginTitle: ['欢迎回来', 'Welcome back', 'Bienvenido de nuevo'],
-  loginSub: ['输入员工编号或姓名', 'Enter your employee ID or name', 'Ingresa tu número o nombre de empleado'],
+  loginSub: ['输入员工编号和 PIN', 'Enter your employee ID and PIN', 'Ingresa tu número de empleado y PIN'],
+  pinPh: ['PIN', 'PIN', 'PIN'],
+  loginBad: ['编号或 PIN 不正确', 'Wrong ID or PIN', 'Número o PIN incorrecto'],
+  loginLocked: ['输错次数过多，账号已锁定 15 分钟', 'Too many wrong tries — locked for 15 minutes', 'Demasiados intentos: bloqueado 15 minutos'],
+  loginNet: ['无法连接服务器，请检查网络', 'Cannot reach the server — check your connection', 'No se puede conectar: revisa tu conexión'],
+  sessionExpired: ['登录已失效，请重新登录', 'Signed out — please sign in again', 'Sesión cerrada: vuelve a entrar'],
+  pinSetTitle: ['设置你的 PIN', 'Set your PIN', 'Crea tu PIN'], pinChangeTitle: ['修改 PIN', 'Change PIN', 'Cambiar PIN'],
+  pinSetSub: ['首次登录需要设置自己的 PIN，以后用它登录。', 'First sign-in: choose your own PIN. You will use it to sign in from now on.', 'Primer acceso: elige tu PIN. Lo usarás para entrar.'],
+  pinOld: ['当前 PIN', 'Current PIN', 'PIN actual'], pinNew: ['新 PIN', 'New PIN', 'PIN nuevo'], pinAgain: ['再输入一次', 'Repeat new PIN', 'Repite el PIN'],
+  pinRule: ['至少 {n} 位，不能用 1234、1111 这类简单组合', 'At least {n} characters; not something simple like 1234 or 1111', 'Mínimo {n} caracteres; nada simple como 1234 o 1111'],
+  pinMismatch: ['两次输入不一致', 'The two entries do not match', 'Los PIN no coinciden'], pinSaved: ['PIN 已更新', 'PIN updated', 'PIN actualizado'],
+  pinWeak: ['PIN 太简单或太短', 'PIN is too simple or too short', 'PIN demasiado simple o corto'], pinOldBad: ['当前 PIN 不正确', 'Current PIN is wrong', 'PIN actual incorrecto'],
+  changePin: ['修改 PIN', 'Change PIN', 'Cambiar PIN'],
+  pinInitial: ['初始 PIN（员工首次登录后要自己改）', 'Starting PIN (they must change it at first sign-in)', 'PIN inicial (deberá cambiarlo al entrar)'],
+  pinReset: ['重置 PIN（留空则不变）', 'Reset PIN (leave empty to keep)', 'Restablecer PIN (vacío = sin cambio)'],
+  pinNeed: ['请为新员工设置初始 PIN', 'Set a starting PIN for the new employee', 'Define un PIN inicial'],
+  pinSetOk: ['PIN 已设置', 'PIN set', 'PIN definido'], pinSetFail: ['PIN 没有设置成功，请重新打开该员工再设一次', 'PIN was not set — open the employee and try again', 'No se definió el PIN: inténtalo de nuevo'],
+  noPinYet: ['未设 PIN', 'no PIN yet', 'sin PIN'],
+  srvRange: ['服务器判定不在打卡范围，这次打卡没有记录', 'Server says you are out of range — punch not recorded', 'Fuera de rango según el servidor: no se registró'],
+  srvTime: ['打卡时间已过期，没有记录，请提交补卡申请', 'Punch was too old to accept — please request a fix', 'Fichaje caducado: solicita una corrección'],
+  srvForbidden: ['没有权限做这个操作', 'You are not allowed to do that', 'No tienes permiso'],
+  srvRejected: ['服务器没有接受这次修改', 'The server did not accept this change', 'El servidor rechazó el cambio'],
   loginPh: ['员工编号或姓名', 'Employee ID or name', 'Número o nombre'],
   enter: ['进入', 'Continue', 'Continuar'],
   notFound: ['找不到该员工，请检查编号或姓名', 'No match — check your ID or name', 'No encontrado: revisa tu número o nombre'],
@@ -57,7 +78,7 @@ const DICT = {
   toastApproved: ['已批准', 'Approved', 'Aprobada'], toastDenied: ['已拒绝', 'Denied', 'Rechazada'],
   employeeId: ['员工编号', 'Employee ID', 'Nº de empleado'], name: ['姓名', 'Name', 'Nombre'],
   radius: ['打卡半径', 'Punch radius', 'Radio de fichaje'], language: ['语言', 'Language', 'Idioma'],
-  dataConn: ['数据存储', 'Data storage', 'Datos'], local: ['仅本机（未连接云端）', 'This device only (offline)', 'Solo este dispositivo'], remote: ['Supabase 已连接', 'Supabase connected', 'Supabase conectado'],
+  dataConn: ['数据存储', 'Data storage', 'Datos'], local: ['离线（恢复后自动同步）', 'Offline (syncs when back)', 'Sin conexión (se sincroniza luego)'], remote: ['云端已同步', 'Cloud synced', 'Sincronizado'],
   sbTitle: ['连接 Supabase（免费后端）', 'Connect Supabase (free backend)', 'Conectar Supabase (backend gratis)'],
   sbIntro: ['连接后所有打卡和申请会同步到云端，所有手机共享同一份数据。见 README 建表 SQL。', 'Once connected, punches and requests sync to the cloud and every phone shares the same data. See README for the table SQL.', 'Al conectar, fichajes y solicitudes se sincronizan en la nube y todos los teléfonos comparten los datos. Ver README para el SQL.'],
   connect: ['连接', 'Connect', 'Conectar'], connecting: ['连接中…', 'Connecting…', 'Conectando…'], disconnect: ['断开', 'Disconnect', 'Desconectar'],
@@ -100,19 +121,19 @@ const LOCALE = { zh: 'zh-CN', en: 'en-US', es: 'es' };
 const WK = { bg: '#E6F6EC', fg: '#17603A', dot: '#2E9E5B' };
 
 class Component extends DCLogic {
-  state = { lang: null, db: null, me: null, screen: 'login', tab: 'clock', mTab: 'today', loginInput: '', loginErr: false, geo: { state: 'locating' }, now: new Date(), sheet: null, sheetStep: 'confirm', toast: null, rq: null, attDate: null, se: null, seHere: '', ee: null, eeErr: '', sbUrl: '', sbKey: '', sbOn: false, sbBusy: false, sbErr: '' };
+  state = { lang: null, db: null, me: null, screen: 'login', tab: 'clock', mTab: 'today', loginInput: '', loginPin: '', loginMsg: '', loginBusy: false, pc: null, geo: { state: 'locating' }, now: new Date(), sheet: null, sheetStep: 'confirm', toast: null, rq: null, attDate: null, se: null, seHere: '', ee: null, eeErr: '', sbOn: false };
 
   async componentDidMount() {
     this.S = await import(window.__resources && window.__resources.storeJs || './store.js');
     const S = this.S;
-    let db = S.loadLocal(); if (!db) { db = S.seed(); S.saveLocal(db); }
-    const meId = localStorage.getItem(S.LS_ME);
-    const me = db.employees.find(e => e.id === meId) || null;
+    this.remote = new S.Remote(S.SB, localStorage.getItem(S.LS_TOKEN) || '');
+    // The cached copy lets a signed-in phone open instantly (and offline); the server copy replaces it right after.
+    const db = (this.remote.token && S.loadLocal()) || S.emptyDb();
+    const me = db.employees.find(e => e.id === localStorage.getItem(S.LS_ME)) || null;
+    if (!me || !db.sites.length) this.remote.token = '';
     const lang = localStorage.getItem(S.LS_LANG);
-    let sbCfg = null; try { sbCfg = JSON.parse(localStorage.getItem(S.LS_SB)); } catch (e) {}
-    if (!(sbCfg && sbCfg.url) && /^https?:/.test(S.SB_DEFAULT.url)) sbCfg = S.SB_DEFAULT;
-    this.setState({ db, me, screen: me ? 'app' : 'login', lang: lang || null, attDate: S.dayKey(new Date()), sbUrl: sbCfg?.url || '', sbKey: sbCfg?.key || '' });
-    if (sbCfg) this.remoteReady = this.connectRemote(sbCfg, true);
+    this.setState({ db: this.remote.token ? db : S.emptyDb(), me: this.remote.token ? me : null, screen: this.remote.token ? 'app' : 'login', lang: lang || null, attDate: S.dayKey(new Date()) });
+    if (this.remote.token) this.refreshRemote();
     this.timer = setInterval(() => this.setState({ now: new Date() }), 1000);
     this.refreshTimer = setInterval(() => this.refreshRemote(), 60000);
     this.onVis = () => { if (!document.hidden) this.refreshRemote(); };
@@ -162,71 +183,76 @@ class Component extends DCLogic {
   dayFromKey(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); }
 
   // ---- data
-  // Every change is saved locally first, then queued and pushed to Supabase.
-  // The queue survives reloads, so a punch made offline is sent once the phone is back online.
+  // Every change is saved locally first, then queued and sent to the server.
+  // The queue survives reloads, so a punch made without signal is sent once the phone is back online.
   outbox() { try { return JSON.parse(localStorage.getItem(this.S.LS_OUT)) || []; } catch (e) { return []; } }
   setOutbox(q) { try { localStorage.setItem(this.S.LS_OUT, JSON.stringify(q)); } catch (e) {} }
+  dropFirst() { const q = this.outbox(); q.shift(); this.setOutbox(q); }
   persist(db, changes) {
     this.S.saveLocal(db); this.setState({ db });
-    if (this.remote && changes && changes.length) { this.setOutbox(this.outbox().concat(changes)); this.flush(); }
+    if (changes && changes.length && this.state.me) { const by = this.state.me.id; this.setOutbox(this.outbox().concat(changes.map(c => ({ by, c })))); this.flush(); }
   }
   flush() {
-    if (!this.remote) return Promise.resolve(false);
     if (!this.flushP) this.flushP = this.flushRun().finally(() => { this.flushP = null; });
     return this.flushP;
   }
   async flushRun() {
+    let rejected = false;
     try {
       let q;
       while ((q = this.outbox()).length) {
-        const [table, row, del] = q[0];
-        if (del) await this.remote.remove(table, row); else await this.remote.upsert(table, [row]);
-        const cur = this.outbox(); cur.shift(); this.setOutbox(cur);
+        const me = this.state.me;
+        if (!this.remote.token || !me) return false;
+        if (q[0].by !== me.id) { this.dropFirst(); continue; }  // left over from another account on this phone
+        const [table, row, del] = q[0].c;
+        try { await this.remote.apply(table, row, del); }
+        catch (e) {
+          if (e.code === 'EF_AUTH' || e.code === 'EF_MUST_CHANGE') { this.authLost(); return false; }
+          // The server looked at the change and said no (out of range, no permission…): it will never succeed, so drop it.
+          if (e.code || e.status === 400 || e.status === 409 || e.status === 422) { console.warn('rejected', table, e.message); rejected = true; this.dropFirst(); this.showToast(this.errText(e), '#D9453B'); continue; }
+          throw e;
+        }
+        this.dropFirst();
       }
       this.syncWarned = false; return true;
     } catch (e) {
       console.warn('sync', e);
       if (!this.syncWarned) { this.syncWarned = true; this.showToast(this.t('syncFail'), '#D9453B'); }
+      if (this.state.sbOn) this.setState({ sbOn: false });
       return false;
+    } finally {
+      if (rejected) setTimeout(() => this.refreshRemote(), 50);  // show what the server actually has
     }
   }
-  // Replace the local copy with the server's and keep the signed-in user in step with it.
-  applyDb(db) {
-    this.S.saveLocal(db); const ns = { db }, cur = this.state.me;
-    if (cur) { const m = db.employees.find(e => e.id === cur.id); if (m) ns.me = m; else { localStorage.removeItem(this.S.LS_ME); ns.me = null; ns.screen = 'login'; } }
-    this.setState(ns);
+  errText(e) {
+    if (e && e.network) return this.t('loginNet');
+    const k = { EF_PIN_WEAK: 'pinWeak', EF_PIN_OLD: 'pinOldBad', EF_RANGE: 'srvRange', EF_TIME: 'srvTime', EF_FORBIDDEN: 'srvForbidden', EF_LAST_ADMIN: 'lastAdmin', EF_IN_USE: 'siteInUse' }[e && e.code];
+    return this.t(k || 'srvRejected');
   }
-  // Load the server copy. A brand-new database (no sites yet) is first filled from this device.
-  async pull(R) {
-    let remoteDb = await R.loadAll();
-    if (!remoteDb.sites.length) { await R.pushAll(this.state.db); remoteDb = await R.loadAll(); }
-    if (this.outbox().length) return;
-    this.applyDb(remoteDb);
+  // Replace the local copy with what the server says this person may see.
+  applyDb(r) {
+    const db = { sites: r.sites || [], employees: r.employees || [], punches: r.punches || [], requests: r.requests || [] };
+    const me = db.employees.find(e => e.id === r.me);
+    if (!me || !db.sites.length) { this.authLost(); return false; }
+    this.S.saveLocal(db); localStorage.setItem(this.S.LS_ME, me.id);
+    this.setState({ db, me, sbOn: true }); return true;
   }
+  forget() { const S = this.S; this.remote.token = ''; localStorage.removeItem(S.LS_TOKEN); localStorage.removeItem(S.LS_ME); S.clearLocal(); }
+  authLost() { this.forget(); this.setState({ me: null, screen: 'login', db: this.S.emptyDb(), sheet: null, ee: null, se: null, pc: null, loginMsg: this.t('sessionExpired') }); }
+  signOut() { if (this.remote.token) this.remote.logout().catch(() => {}); this.forget(); this.setState({ me: null, screen: 'login', db: this.S.emptyDb(), sheet: null, ee: null, se: null, pc: null, loginMsg: '' }); }
   async refreshRemote() {
-    if (!this.remote || this.refreshing) return;
+    if (!this.remote || !this.remote.token || this.refreshing) return;
     this.refreshing = true;
     try {
       if (!(await this.flush()) || this.outbox().length) return;
-      await this.pull(this.remote); if (!this.state.sbOn) this.setState({ sbOn: true });
-    } catch (e) { console.warn('refresh', e); } finally { this.refreshing = false; }
-  }
-  async connectRemote(cfg, silent) {
-    this.setState({ sbBusy: true, sbErr: '' });
-    const R = new this.S.Remote(cfg), prev = this.remote;
-    try {
-      await R.select('sites');
-      this.remote = R;
-      if (this.outbox().length && !(await this.flush())) throw new Error('flush');
-      await this.pull(R);
-      localStorage.setItem(this.S.LS_SB, JSON.stringify(cfg));
-      this.setState({ sbOn: true, sbBusy: false });
+      const r = await this.remote.sync();
+      if (this.outbox().length) return;
+      this.applyDb(r);
     } catch (e) {
-      console.warn('connect', e);
-      // On a silent (startup) failure keep the connection object so the periodic refresh retries.
-      this.remote = silent ? R : prev || null;
-      this.setState({ sbOn: false, sbBusy: false, sbErr: silent ? '' : this.t('sbFail') });
-    }
+      if (e.code === 'EF_AUTH') this.authLost();
+      else if (e.code === 'EF_MUST_CHANGE') this.setState({ screen: 'setpin', pc: { old: '', a: '', b: '', err: '', forced: true } });
+      else { console.warn('refresh', e); if (this.state.sbOn) this.setState({ sbOn: false }); }
+    } finally { this.refreshing = false; }
   }
   showToast(text, dot) { clearTimeout(this.tt); this.setState({ toast: text, toastDot: dot || '#2E9E5B' }); this.tt = setTimeout(() => this.setState({ toast: null }), 2600); }
   dayPunches(empId, key) { return this.state.db.punches.filter(p => p.empId === empId && this.S.dayKey(p.t) === key).sort((a, b) => a.t.localeCompare(b.t)); }
@@ -242,18 +268,67 @@ class Component extends DCLogic {
     const st = this.state, { db, me, geo, now } = st, S = this.S;
     const L = this.lang(), T = {}; Object.keys(DICT).forEach(k => { T[k] = this.t(k); });
     const langOpts = [['zh', '中文'], ['en', 'EN'], ['es', 'ES']].map(([k, label]) => ({ label, bg: L === k ? '#141A2A' : 'transparent', fg: L === k ? '#fff' : '#6B7280', pick: () => { localStorage.setItem(S.LS_LANG, k); this.setState({ lang: k }); } }));
-    const v = { T, langOpts, isLogin: st.screen === 'login', isApp: st.screen === 'app', isNewReq: st.screen === 'newreq', isAdmin: false, toast: st.toast, toastDot: st.toastDot || '#2E9E5B', sheetOpen: false };
+    const v = { T, langOpts, isLogin: st.screen === 'login', isSetPin: false, isApp: st.screen === 'app', isNewReq: st.screen === 'newreq', isAdmin: false, toast: st.toast, toastDot: st.toastDot || '#2E9E5B', sheetOpen: false };
     if (!db) return v;
 
     // login
-    v.loginInput = st.loginInput; v.loginErr = st.loginErr; v.loginBorder = st.loginErr ? '#D9453B' : '#E3E6EC';
-    v.setLoginInput = e => this.setState({ loginInput: e.target.value, loginErr: false });
-    v.login = async () => { const q = st.loginInput.trim().toLowerCase(); if (!q) return; if (this.remoteReady) await Promise.race([this.remoteReady, new Promise(r => setTimeout(r, 6000))]); const emp = this.state.db.employees.find(e => e.id.toLowerCase() === q || e.name.toLowerCase() === q); if (!emp) return this.setState({ loginErr: true }); localStorage.setItem(S.LS_ME, emp.id); this.setState({ me: emp, screen: 'app', tab: 'clock', loginInput: '', loginErr: false }, () => this.startGeo()); };
+    v.loginInput = st.loginInput; v.loginPin = st.loginPin; v.loginMsg = st.loginMsg; v.loginBorder = st.loginMsg ? '#D9453B' : '#E3E6EC';
+    v.loginBtn = st.loginBusy ? T.connecting : T.enter;
+    v.setLoginInput = e => this.setState({ loginInput: e.target.value, loginMsg: '' });
+    v.setLoginPin = e => this.setState({ loginPin: e.target.value, loginMsg: '' });
+    v.login = async () => {
+      const id = st.loginInput.trim(), pin = st.loginPin;
+      if (!id || st.loginBusy) return;
+      this.setState({ loginBusy: true, loginMsg: '' });
+      try {
+        const r = await this.remote.login(id, pin);
+        if (!r || !r.ok) return this.setState({ loginBusy: false, loginPin: '', loginMsg: r && r.error === 'EF_LOCKED' ? T.loginLocked : T.loginBad });
+        this.remote.token = r.token; localStorage.setItem(S.LS_TOKEN, r.token); localStorage.setItem(S.LS_ME, r.me.id);
+        this.setOutbox(this.outbox().filter(x => x.by === r.me.id));
+        const done = { loginBusy: false, loginInput: '', loginPin: '', loginMsg: '' };
+        if (r.mustChange) return this.setState(Object.assign(done, { me: r.me, screen: 'setpin', pc: { old: '', a: '', b: '', err: '', forced: true } }));
+        if (!this.applyDb(await this.remote.sync())) return this.setState({ loginBusy: false });
+        this.setState(Object.assign(done, { screen: 'app', tab: 'clock' }), () => { this.startGeo(); this.flush(); });
+      } catch (e) {
+        if (this.remote.token && !this.state.me) this.forget();
+        this.setState({ loginBusy: false, loginMsg: e.network ? T.loginNet : this.errText(e) });
+      }
+    };
     v.loginKey = e => { if (e.key === 'Enter') v.login(); };
     if (!me) return v;
 
+    // set / change PIN
+    if (st.screen === 'setpin') {
+      const pc = st.pc || { old: '', a: '', b: '', err: '', forced: false }, minLen = me.role === 'employee' ? 4 : 6;
+      const setPc = patch => this.setState({ pc: Object.assign({}, pc, { err: '' }, patch) });
+      v.isSetPin = true; v.myNameLine = me.name + ' · #' + me.id; v.pc = pc; v.pcNeedOld = !pc.forced; v.pcForced = !!pc.forced;
+      v.pcTitle = pc.forced ? T.pinSetTitle : T.pinChangeTitle; v.pcRule = this.t('pinRule', { n: minLen });
+      v.pcBtn = pc.busy ? T.connecting : T.save; v.pcCancelLabel = pc.forced ? T.signOut : T.cancel;
+      v.setPcOld = e => setPc({ old: e.target.value }); v.setPcA = e => setPc({ a: e.target.value }); v.setPcB = e => setPc({ b: e.target.value });
+      v.pcCancel = () => { if (pc.forced) this.signOut(); else this.setState({ screen: 'app', tab: 'me', pc: null }); };
+      v.pcSubmit = async () => {
+        if (pc.busy) return;
+        if (pc.a.length < minLen) return setPc({ err: v.pcRule });
+        if (pc.a !== pc.b) return setPc({ err: T.pinMismatch });
+        setPc({ busy: true });
+        try {
+          await this.remote.setPin(me.id, pc.a, pc.forced ? null : pc.old);
+          if (!this.applyDb(await this.remote.sync())) return;
+          this.setState({ screen: 'app', tab: pc.forced ? 'clock' : 'me', pc: null }, () => this.startGeo());
+          this.showToast(T.pinSaved);
+        } catch (e) {
+          if (e.code === 'EF_AUTH') return this.authLost();
+          this.setState({ pc: Object.assign({}, pc, { busy: false, err: this.errText(e) }) });
+        }
+      };
+      v.pcKey = e => { if (e.key === 'Enter') v.pcSubmit(); };
+      return v;
+    }
+    if (!db.sites.length) return v;
+    if (!me) return v;
+
     // common
-    const near = this.nearest(), site = near.site, radius = site ? site.radius : 10, dist = near.dist == null ? null : Math.round(near.dist), acc = geo.acc || 0;
+    const near = this.nearest() || { site: null, dist: null }, site = near.site, radius = site ? site.radius : 10, dist = near.dist == null ? null : Math.round(near.dist), acc = geo.acc || 0;
     const geoOk = geo.state === 'ok';
     const tolOk = site && site.tolerance && acc <= 30 && near.dist - acc <= radius;
     const inRange = geoOk && (near.dist <= radius || tolOk);
@@ -270,7 +345,7 @@ class Component extends DCLogic {
     const mySite = this.mySite(); v.mySiteName = mySite ? mySite.name : '—'; v.mySiteRadius = mySite ? mySite.radius : '—';
     v.nearSiteName = site ? site.name : '—';
     v.goMe = () => this.setState({ screen: 'app', tab: 'me' });
-    v.signOut = () => { localStorage.removeItem(S.LS_ME); this.setState({ me: null, screen: 'login' }); };
+    v.signOut = () => this.signOut();
     v.tabClock = st.tab === 'clock'; v.tabHistory = st.tab === 'history'; v.tabRequests = st.tab === 'requests'; v.tabMe = st.tab === 'me';
     const myPending = db.requests.filter(r => r.empId === me.id && r.status === 'pending').length;
     v.tabs = [['clock', T.tabClock], ['history', T.tabHistory], ['requests', T.tabRequests], ['me', T.tabMe]].filter(x => !(exempt && x[0] === 'history')).map(([k, label]) => ({ label, bg: st.tab === k ? '#fff' : 'transparent', fg: st.tab === k ? '#141A2A' : 'rgba(255,255,255,.7)', dot: k === 'requests' && myPending > 0 && st.tab !== k, go: () => this.setState({ tab: k }) }));
@@ -307,7 +382,7 @@ class Component extends DCLogic {
     v.sheetTitle = st.sheet === 'in' ? T.confirmIn : T.confirmOut; v.sheetBtn = st.sheet === 'in' ? T.clockIn : T.clockOut; v.sheetBtnBg = st.sheet === 'in' ? '#1F5FD6' : '#141A2A';
     v.nowStr = this.fmtT(now);
     v.closeSheet = () => { if (st.sheetStep === 'done') return; this.setState({ sheet: null }); };
-    v.confirmPunch = () => { const p = { id: S.uid(), empId: me.id, siteId: site.id, type: st.sheet, t: new Date().toISOString(), dist: Math.round(near.dist * 10) / 10, acc }; const ndb = Object.assign({}, db, { punches: db.punches.concat(p) }); this.persist(ndb, [['punches', p]]); this.setState({ sheetStep: 'done' }); setTimeout(() => { this.setState({ sheet: null, sheetStep: 'confirm' }); this.showToast((st.sheet === 'in' ? T.doneIn : T.doneOut) + ' · ' + this.fmtT(p.t)); }, 1400); };
+    v.confirmPunch = () => { const p = { id: S.uid(), empId: me.id, siteId: site.id, type: st.sheet, t: new Date().toISOString(), dist: Math.round(near.dist * 10) / 10, acc, lat: geo.lat, lng: geo.lng }; const ndb = Object.assign({}, db, { punches: db.punches.concat(p) }); this.persist(ndb, [['punches', p]]); this.setState({ sheetStep: 'done' }); setTimeout(() => { this.setState({ sheet: null, sheetStep: 'confirm' }); this.showToast((st.sheet === 'in' ? T.doneIn : T.doneOut) + ' · ' + this.fmtT(p.t)); }, 1400); };
     v.doneTitle = st.sheet === 'in' ? T.doneIn : T.doneOut; v.doneSub = this.fmtT(now) + ' · ' + (site ? site.name : '') + ' · ' + dist + ' m';
 
     // history
@@ -349,12 +424,9 @@ class Component extends DCLogic {
     v.rqSubmitBg = rqValid ? '#1F5FD6' : '#E3E6EC'; v.rqSubmitFg = rqValid ? '#fff' : '#8A91A0';
     v.submitReq = () => { if (!rqValid) return; const r = { id: S.uid(), empId: me.id, kind: rq.kind, date: rq.date, punchType: rq.kind === 'fix' ? rq.punchType : null, time: rq.kind === 'fix' ? rq.time : null, days: rq.kind === 'leave' ? rq.days : null, hours: rq.kind === 'leave' ? (rq.hours || 8) : null, reason: rq.reason.trim(), status: 'pending', createdAt: new Date().toISOString() }; this.persist(Object.assign({}, db, { requests: db.requests.concat(r) }), [['requests', r]]); this.setState({ screen: 'app', tab: 'requests', rq: null }); this.showToast(T.toastSent); };
 
-    // me / supabase
-    v.connFg = st.sbOn ? '#17603A' : '#141A2A'; v.connLabel = st.sbOn ? T.remote : T.local;
-    v.sbUrl = st.sbUrl; v.sbKey = st.sbKey; v.sbOn = st.sbOn; v.sbErr = st.sbErr; v.sbBtn = st.sbBusy ? T.connecting : T.connect;
-    v.setSbUrl = e => this.setState({ sbUrl: e.target.value }); v.setSbKey = e => this.setState({ sbKey: e.target.value });
-    v.sbConnect = () => { if (st.sbBusy || !st.sbUrl || !st.sbKey) return; this.connectRemote({ url: st.sbUrl.trim(), key: st.sbKey.trim() }); };
-    v.sbDisconnect = () => { this.remote = null; localStorage.removeItem(S.LS_SB); this.setState({ sbOn: false }); };
+    // me
+    v.connFg = st.sbOn ? '#17603A' : '#8A5A0E'; v.connLabel = st.sbOn ? T.remote : T.local;
+    v.goChangePin = () => this.setState({ screen: 'setpin', pc: { old: '', a: '', b: '', err: '', forced: false } });
     v.goAdmin = () => this.setState({ screen: 'admin', mTab: 'today', se: null, ee: null });
 
     // ---- admin
@@ -426,7 +498,7 @@ class Component extends DCLogic {
     const rank = r => r === 'admin' ? 0 : r === 'leader' ? 1 : 2;
     v.empRows = [...db.employees].sort((a, b) => rank(a.role) - rank(b.role) || a.id.localeCompare(b.id, undefined, { numeric: true })).map(e => ({
       id: e.id, name: e.name, init: this.init(e.name),
-      sub: '#' + e.id + ' · ' + (e.role === 'leader' ? this.t('membersCount', { n: membersOf(e.id).length }) : siteName(e.siteId)) + (e.role === 'employee' && e.leaderId && empName(e.leaderId) ? ' · ' + this.t('leadLine', { n: empName(e.leaderId) }) : '') + (e.noPunch ? ' · ' + T.exempt : ''),
+      sub: '#' + e.id + ' · ' + (e.role === 'leader' ? this.t('membersCount', { n: membersOf(e.id).length }) : siteName(e.siteId)) + (e.role === 'employee' && e.leaderId && empName(e.leaderId) ? ' · ' + this.t('leadLine', { n: empName(e.leaderId) }) : '') + (e.noPunch ? ' · ' + T.exempt : '') + (e.hasPin === false ? ' · ' + T.noPinYet : ''),
       badge: e.role === 'admin' ? T.admin : e.role === 'leader' ? T.leader : '', badgeBg: e.role === 'admin' ? '#58B4EA' : '#FFE1A8',
       edit: () => this.setState({ ee: Object.assign({}, e, { members: membersOf(e.id).map(x => x.id) }), eeErr: '' }) }));
     v.newEmp = () => this.setState({ ee: { id: '', name: '', role: 'employee', siteId: db.sites[0].id, leaderId: null, noPunch: false, members: [], isNew: true }, eeErr: '' });
@@ -434,6 +506,9 @@ class Component extends DCLogic {
       const setEe = patch => this.setState({ ee: Object.assign({}, ee, patch), eeErr: '' });
       v.ee = ee; v.eeErr = st.eeErr; v.empEditTitle = ee.isNew ? T.newEmployee : T.editEmployee; v.eeIdLocked = !ee.isNew; v.eeIdFg = ee.isNew ? '#141A2A' : '#8A91A0';
       v.setEeName = e => setEe({ name: e.target.value }); v.setEeId = e => setEe({ id: e.target.value.replace(/\s/g, '') });
+      // PIN: required for a new person; for an existing one it resets their PIN. (Your own PIN is changed from "Me".)
+      v.eeShowPin = ee.isNew || ee.id !== me.id; v.eePinLabel = ee.isNew ? T.pinInitial : T.pinReset; v.eePin = ee.pin || '';
+      v.eePinRule = this.t('pinRule', { n: ee.role === 'employee' ? 4 : 6 }); v.setEePin = e => setEe({ pin: e.target.value.replace(/\s/g, '') });
       v.roleOpts = [['employee', T.roleEmp], ['leader', T.leader], ['admin', T.admin]].map(([k, label]) => ({ label, bg: ee.role === k ? '#fff' : 'transparent', fg: ee.role === k ? '#141A2A' : '#6B7280', pick: () => setEe({ role: k }) }));
       v.eeSiteChips = db.sites.map(s => ({ label: s.name, bg: ee.siteId === s.id ? '#DCE7FB' : '#fff', fg: ee.siteId === s.id ? '#1747A6' : '#141A2A', border: ee.siteId === s.id ? '#1F5FD6' : '#E3E6EC', pick: () => setEe({ siteId: s.id }) }));
       // Employee -> which team lead they report to
@@ -450,6 +525,9 @@ class Component extends DCLogic {
       v.eeSave = () => {
         if (!ee.name.trim() || !ee.id) return this.setState({ eeErr: T.needFields });
         if (ee.isNew && db.employees.some(e => e.id === ee.id)) return this.setState({ eeErr: T.idTaken });
+        const newPin = v.eeShowPin ? (ee.pin || '') : '';
+        if (ee.isNew && !newPin) return this.setState({ eeErr: T.pinNeed });
+        if (newPin && newPin.length < (ee.role === 'employee' ? 4 : 6)) return this.setState({ eeErr: v.eePinRule });
         const row = { id: ee.id, name: ee.name.trim(), role: ee.role, siteId: ee.siteId, leaderId: ee.role === 'employee' ? (ee.leaderId || null) : null, noPunch: ee.role !== 'employee' && !!ee.noPunch };
         const changes = [['employees', row]], team = ee.role === 'leader' ? mem : [];
         const employees = (ee.isNew ? db.employees.concat(row) : db.employees.map(e => e.id === ee.id ? row : e)).map(e => {
@@ -462,6 +540,8 @@ class Component extends DCLogic {
         if (!employees.some(e => e.role === 'admin')) return this.setState({ eeErr: T.lastAdmin });
         this.persist(Object.assign({}, db, { employees }), changes);
         const ns = { ee: null }; if (row.id === me.id) ns.me = row; this.setState(ns); this.showToast(T.saved);
+        // The PIN is never stored on this phone: it is sent straight to the server once the employee record is saved there.
+        if (newPin) this.flush().then(ok => { if (!ok) throw new Error('offline'); return this.remote.setPin(row.id, newPin); }).then(() => { this.showToast(T.pinSetOk); this.refreshRemote(); }).catch(e => this.showToast(e && e.code === 'EF_PIN_WEAK' ? T.pinWeak : T.pinSetFail, '#D9453B'));
       };
       v.empBack = () => this.setState({ ee: null });
     }

@@ -2,7 +2,7 @@
 
 网站：https://ooool19.github.io/etailflow-clock/
 
-手机优先的网页（中文 / English / Español）。员工在工作地点打卡半径内才能上下班打卡；数据存在 Supabase，所有手机共享同一份数据。
+手机优先的网页（中文 / English / Español）。员工用编号 + PIN 登录，在工作地点打卡半径内才能上下班打卡；数据存在 Supabase，所有手机共享同一份数据。
 
 ## 角色
 
@@ -14,14 +14,14 @@
 
 - 分配组员：主管理员 → 管理员后台 → 员工 → 点开某位小组长 → 在“组员”里点选员工；或点开某位员工 → 选“所属小组长”。
 - 免打卡：主管理员在小组长（或主管理员）的编辑页打开“免打卡”。免打卡的人不出现在考勤和缺卡统计里。
-- 初始只有一个主管理员账号 `1001`，登录后在“员工”里改名、添加其他人。
 
 ## 文件
 
 - `index.html` — 网站本体（单文件，字体、图标、程序都打包在里面）
 - `src/app.template.html` — 页面结构
-- `src/app.logic.js` — 页面逻辑（角色、打卡、审批、同步）
-- `src/store.js` — 数据层（本机缓存 + Supabase 同步）
+- `src/app.logic.js` — 页面逻辑（登录、角色、打卡、审批、同步）
+- `src/store.js` — 数据层（本机缓存 + 调用数据库函数）
+- `supabase/security.sql` — 数据库的表、登录和权限规则
 - `src/config.json` — Supabase 项目地址和公开 key
 - `build.py` — 把 `src/` 里的内容重新打包进 `index.html`
 - `deploy.command` — 双击发布到 GitHub Pages
@@ -32,32 +32,37 @@
 2. 运行 `python3 build.py` 重新生成 `index.html`。
 3. 双击 `deploy.command` 推送到 GitHub，1–3 分钟后生效。
 
-## Supabase 建表 SQL
+## 登录与安全
 
-在 Supabase → SQL Editor 里运行一次：
+- 每个人用 **员工编号 + PIN** 登录。PIN 在数据库里只存加密后的哈希，网站和手机都不保存明文。
+- 新员工：主管理员在“员工”里添加时设一个初始 PIN，告诉本人；本人第一次登录时必须改成自己的 PIN。
+- 忘记 PIN：主管理员打开该员工，在“重置 PIN”里填一个新的；对方原来的登录会立刻失效，下次登录后要再改一次。
+- 改自己的 PIN：我 → 修改 PIN（需要输入当前 PIN）。
+- PIN 长度：员工至少 4 位，小组长和主管理员至少 6 位；不接受 1234、1111 这类简单组合。
+- 连续输错 5 次，账号锁定 15 分钟。
+- 登录状态在手机上保留 90 天（一直在用会自动续期）；退出登录会清掉这台手机上的缓存数据。
 
-```sql
-create table if not exists sites (id text primary key, name text, address text, lat double precision, lng double precision, radius int default 10, tolerance boolean default true);
-create table if not exists employees (id text primary key, name text, role text default 'employee', "siteId" text, "leaderId" text, "noPunch" boolean default false);
-create table if not exists punches (id text primary key, "empId" text, "siteId" text, type text, t timestamptz, dist double precision, acc double precision, "viaRequest" text);
-create table if not exists requests (id text primary key, "empId" text, kind text, date text, "punchType" text, time text, days int, hours int, reason text, status text default 'pending', "createdAt" timestamptz);
-create index if not exists punches_t_idx on punches (t);
-alter table sites enable row level security;
-alter table employees enable row level security;
-alter table punches enable row level security;
-alter table requests enable row level security;
-create policy "open" on sites for all using (true) with check (true);
-create policy "open" on employees for all using (true) with check (true);
-create policy "open" on punches for all using (true) with check (true);
-create policy "open" on requests for all using (true) with check (true);
-grant select, insert, update, delete on sites, employees, punches, requests to anon, authenticated;
-```
+权限由数据库在服务器端检查，不是只靠界面隐藏：
 
-**安全提醒：** 上面的 `"open"` 策略是完全开放的——网站没有密码登录，任何拿到网址里公开 key 的人都能读写这些表（包括改打卡记录、把自己设成管理员）。角色权限目前只是界面上的限制。内部试用可以，正式长期使用前建议加上登录验证并收紧策略。
+| 角色 | 服务器允许 |
+| --- | --- |
+| 员工 | 只能读到自己的资料、打卡和申请；只能给自己打卡、提交自己的申请 |
+| 小组长 | 另外能读到自己组员的资料、打卡和申请（只读） |
+| 主管理员 | 全部读写：员工、地点、审批、重置 PIN |
+
+- 数据表对公开 key 完全关闭，网站只能通过 `ef_login / ef_sync / ef_apply / ef_set_pin / ef_logout` 这几个数据库函数访问。
+- 打卡时服务器会用上传的坐标重新计算距离，不在半径内的打卡不记录；打卡时间不能是未来，也不能早于 12 小时前。
+- 仍然防不了的事：员工在自己手机上用软件伪造 GPS 定位；以及员工把自己的 PIN 告诉别人代打卡。
+
+## 数据库（Supabase）
+
+全部设置都在 `supabase/security.sql` 里，可以重复运行。换新项目时：在 Supabase → SQL Editor 里运行这个文件，然后把项目地址和 publishable key 填进 `src/config.json`，再 `python3 build.py`。
+
+全新数据库会自动建好两个地点和一个主管理员 `1001`，它没有 PIN——第一次用 `1001` 登录的人要当场设置 PIN，所以建好后请立刻登录一次。
 
 ## 数据同步
 
-- 每次打卡/修改先存在本机，再推送到 Supabase；没网时会排队，恢复后自动补传。
+- 每次打卡/修改先存在本机，再发给服务器；没网时会排队，恢复后自动补传（打卡最多可晚 12 小时补传）。
 - 每分钟以及回到页面时会自动拉取最新数据。
 - 打卡记录只加载最近 100 天（更早的仍保存在 Supabase 里）。
 

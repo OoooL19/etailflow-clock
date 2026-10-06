@@ -1,9 +1,10 @@
-// Data layer: local cache (always) + Supabase REST mirror.
-export const LS_DB = 'efclock.db.v2', LS_ME = 'efclock.me', LS_LANG = 'efclock.lang', LS_SB = 'efclock.supabase', LS_OUT = 'efclock.outbox';
+// Data layer: a local cache for offline viewing + the Supabase backend.
+// The database tables are closed to the public key; everything goes through the
+// ef_* functions (see supabase/security.sql), which check the login session and role.
+export const LS_DB = 'efclock.db.v3', LS_ME = 'efclock.me', LS_LANG = 'efclock.lang', LS_TOKEN = 'efclock.token', LS_OUT = 'efclock.outbox.v2';
 
-// Built-in Supabase project so every phone shares the same data without setup.
-// The anon key is a public key by design; access is governed by the table policies.
-export const SB_DEFAULT = { url: '__SB_URL__', key: '__SB_KEY__' };
+// Filled in from src/config.json by build.py. The key is Supabase's publishable key (public by design).
+export const SB = { url: '__SB_URL__', key: '__SB_KEY__' };
 
 export function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 export function dayKey(d) { d = new Date(d); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -13,56 +14,31 @@ export function haversine(a, b, c, d) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-// First-run data: the work sites and a single main admin. No demo staff or punches.
-export function seed() {
-  const sites = [
-    { id: 'newark', name: 'Etailflow · Newark', address: '1800 Ogletown Rd Ste B, Newark, DE 19711', lat: 39.6861401, lng: -75.7192305, radius: 10, tolerance: true },
-    { id: 'wilm', name: 'Etailflow · Wilmington', address: '(set address)', lat: 39.7391, lng: -75.5398, radius: 10, tolerance: true },
-  ];
-  const employees = [
-    { id: '1001', name: 'Marisol Alvarez', role: 'admin', siteId: 'newark', leaderId: null, noPunch: false },
-  ];
-  return { sites, employees, punches: [], requests: [] };
-}
-
+export function emptyDb() { return { sites: [], employees: [], punches: [], requests: [] }; }
 export function loadLocal() { try { return JSON.parse(localStorage.getItem(LS_DB)); } catch (e) { return null; } }
 export function saveLocal(db) { try { localStorage.setItem(LS_DB, JSON.stringify(db)); } catch (e) {} }
+export function clearLocal() { try { localStorage.removeItem(LS_DB); } catch (e) {} }
 
-// Supabase REST mirror. Tables: sites, employees, punches, requests (see README.md for SQL).
-const PAGE = 1000, PUNCH_DAYS = 100;
-function httpError(what, status) { const e = new Error(what + ' ' + status); e.status = status; return e; }
 export class Remote {
-  constructor(cfg) { this.url = cfg.url.replace(/\/$/, ''); this.key = cfg.key; }
-  headers(extra) { return Object.assign({ apikey: this.key, Authorization: 'Bearer ' + this.key, 'Content-Type': 'application/json' }, extra || {}); }
-  // Reads every row, page by page (the API returns at most 1000 rows per request).
-  async select(table, filter) {
-    const out = [];
-    for (let offset = 0; ; offset += PAGE) {
-      const r = await fetch(this.url + '/rest/v1/' + table + '?select=*' + (filter || '') + '&order=id&limit=' + PAGE + '&offset=' + offset, { headers: this.headers() });
-      if (!r.ok) throw httpError(table, r.status);
-      const rows = await r.json(); out.push(...rows);
-      if (rows.length < PAGE) return out;
+  constructor(cfg, token) { this.url = cfg.url.replace(/\/$/, ''); this.key = cfg.key; this.token = token || ''; }
+  // Errors carry: .network (could not reach the server), .status (HTTP status),
+  // .code (an EF_* reason when the server refused the request on purpose).
+  async rpc(fn, args) {
+    let r;
+    try {
+      r = await fetch(this.url + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: this.key, Authorization: 'Bearer ' + this.key, 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
+    } catch (e) { const err = new Error('network'); err.network = true; throw err; }
+    if (!r.ok) {
+      let msg = ''; try { msg = (await r.json()).message || ''; } catch (e) {}
+      const err = new Error(msg || 'http ' + r.status); err.status = r.status; err.code = /^EF_[A-Z_]+$/.test(msg) ? msg : ''; throw err;
     }
+    const text = await r.text(); return text ? JSON.parse(text) : null;
   }
-  async upsert(table, rows) {
-    const r = await fetch(this.url + '/rest/v1/' + table, { method: 'POST', headers: this.headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }), body: JSON.stringify(rows) });
-    if (!r.ok) throw httpError(table, r.status);
-  }
-  async remove(table, id) {
-    const r = await fetch(this.url + '/rest/v1/' + table + '?id=eq.' + encodeURIComponent(id), { method: 'DELETE', headers: this.headers() });
-    if (!r.ok) throw httpError(table, r.status);
-  }
-  async loadAll() {
-    const since = new Date(Date.now() - PUNCH_DAYS * 864e5).toISOString();
-    const [sites, employees, punches, requests] = await Promise.all([
-      this.select('sites'), this.select('employees'),
-      this.select('punches', '&t=gte.' + encodeURIComponent(since)), this.select('requests'),
-    ]);
-    return { sites, employees, punches, requests };
-  }
-  async pushAll(db) {
-    for (const t of ['sites', 'employees', 'punches', 'requests']) if (db[t].length) await this.upsert(t, db[t]);
-  }
+  login(id, pin) { return this.rpc('ef_login', { p_id: id, p_pin: pin }); }
+  logout() { return this.rpc('ef_logout', { p_token: this.token }); }
+  sync() { return this.rpc('ef_sync', { p_token: this.token }); }
+  apply(table, row, del) { return this.rpc('ef_apply', { p_token: this.token, p_table: table, p_row: row, p_del: !!del }); }
+  setPin(empId, newPin, oldPin) { return this.rpc('ef_set_pin', { p_token: this.token, p_emp_id: empId, p_new: newPin, p_old: oldPin || null }); }
 }
 
 export function toCsv(rows) {
