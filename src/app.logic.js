@@ -9,7 +9,7 @@ const DICT = {
   pinSetTitle: ['设置你的 PIN', 'Set your PIN', 'Crea tu PIN'], pinChangeTitle: ['修改 PIN', 'Change PIN', 'Cambiar PIN'],
   pinSetSub: ['首次登录需要设置自己的 PIN，以后用它登录。', 'First sign-in: choose your own PIN. You will use it to sign in from now on.', 'Primer acceso: elige tu PIN. Lo usarás para entrar.'],
   pinOld: ['当前 PIN', 'Current PIN', 'PIN actual'], pinNew: ['新 PIN', 'New PIN', 'PIN nuevo'], pinAgain: ['再输入一次', 'Repeat new PIN', 'Repite el PIN'],
-  pinRule: ['至少 {n} 位，不能用 1234、1111 这类简单组合', 'At least {n} characters; not something simple like 1234 or 1111', 'Mínimo {n} caracteres; nada simple como 1234 o 1111'],
+  pinRule: ['至少 {n} 位，数字、字母都可以；不能用 1234、1111 这类简单组合', 'At least {n} characters, digits or letters; not something simple like 1234 or 1111', 'Mínimo {n} caracteres, números o letras; nada simple como 1234 o 1111'],
   pinMismatch: ['两次输入不一致', 'The two entries do not match', 'Los PIN no coinciden'], pinSaved: ['PIN 已更新', 'PIN updated', 'PIN actualizado'],
   pinWeak: ['PIN 太简单或太短', 'PIN is too simple or too short', 'PIN demasiado simple o corto'], pinOldBad: ['当前 PIN 不正确', 'Current PIN is wrong', 'PIN actual incorrecto'],
   changePin: ['修改 PIN', 'Change PIN', 'Cambiar PIN'],
