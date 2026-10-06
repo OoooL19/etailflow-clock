@@ -1,0 +1,363 @@
+
+<div style="max-width:480px;margin:0 auto;min-height:100dvh;background:#F6F7F9;color:#141A2A;font-family:'Nunito Sans','Noto Sans SC',system-ui,sans-serif;position:relative;box-shadow:0 0 0 1px #E3E6EC">
+
+<!-- LOGIN -->
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Login" style="min-height:100dvh;display:flex;flex-direction:column;padding:calc(22px + env(safe-area-inset-top)) 24px calc(28px + env(safe-area-inset-bottom));box-sizing:border-box">
+<div style="display:flex;justify-content:flex-end"><div style="display:flex;gap:2px;padding:3px;border-radius:999px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)"><sc-for list="{{ langOpts }}" as="l" hint-placeholder-count="3"><div sc-camel-on-click="{{ l.pick }}" style="height:34px;padding:0 13px;border-radius:999px;background:{{ l.bg }};color:{{ l.fg }};display:flex;align-items:center;font-weight:700;font-size:13px;cursor:pointer">{{ l.label }}</div></sc-for></div></div>
+<div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:56px">
+<img src="f3a1b1b4-207a-4f91-bfcc-a5fe1001ac63" alt="Etailflow" style="height:36px;width:auto;display:block">
+<div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:28px;margin-top:28px;letter-spacing:-0.3px">{{ T.loginTitle }}</div>
+<div style="font-size:15px;color:#6B7280;font-weight:600;margin-top:6px">{{ T.loginSub }}</div>
+</div>
+<div style="margin-top:34px">
+<input value="{{ loginInput }}" sc-camel-on-change="{{ setLoginInput }}" sc-camel-on-key-down="{{ loginKey }}" placeholder="{{ T.loginPh }}" sc-camel-auto-capitalize="off" style="width:100%;height:60px;border-radius:20px;border:2px solid {{ loginBorder }};background:#fff;padding:0 20px;font-size:18px;font-weight:700;color:#141A2A;box-sizing:border-box">
+<sc-if value="{{ loginErr }}" hint-placeholder-val="{{ false }}"><div style="margin-top:10px;padding:12px 16px;border-radius:14px;background:#FDE9E7;color:#8E2A22;font-size:14px;font-weight:700">{{ T.notFound }}</div></sc-if>
+<div sc-camel-on-click="{{ login }}" style="margin-top:14px;height:60px;border-radius:22px;background:#1F5FD6;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 10px 24px rgba(31,95,214,.28)" style-active="transform:scale(.985)">{{ T.enter }}</div>
+</div>
+<div style="margin-top:auto;padding-top:40px;text-align:center;font-size:13px;color:#8A91A0;line-height:1.5;text-wrap:pretty">{{ T.loginFoot }}</div>
+</div>
+</sc-if>
+
+<!-- EMPLOYEE APP -->
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="padding-bottom:calc(120px + env(safe-area-inset-bottom))">
+
+<!-- CLOCK TAB -->
+<sc-if value="{{ tabClock }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Clock" style="padding:calc(22px + env(safe-area-inset-top)) 22px 0;display:flex;align-items:center;justify-content:space-between;gap:12px">
+<div style="min-width:0"><div style="font-size:14px;color:#6B7280;font-weight:600">{{ dateLabel }}</div><div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ greeting }}</div></div>
+<div sc-camel-on-click="{{ goMe }}" style="width:46px;height:46px;border-radius:50%;background:#DCE7FB;color:#1F5FD6;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none">{{ myInit }}</div>
+</div>
+<sc-if value="{{ exempt }}" hint-placeholder-val="{{ false }}">
+<div style="margin:22px 22px 0;padding:22px 20px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);text-align:center">
+<div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:20px">{{ T.exemptTitle }}</div>
+<div style="font-size:14px;color:#6B7280;line-height:1.5;margin-top:6px;text-wrap:pretty">{{ T.exemptBody }}</div>
+<sc-if value="{{ canManage }}" hint-placeholder-val="{{ false }}"><div sc-camel-on-click="{{ goAdmin }}" style="margin-top:16px;height:56px;border-radius:20px;background:#141A2A;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer">{{ openMgrLabel }}</div></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ notExempt }}" hint-placeholder-val="{{ true }}">
+<div style="margin:22px 22px 0;padding:16px 18px;border-radius:22px;background:{{ statusBg }};display:flex;gap:14px;align-items:center;transition:background .3s">
+<div style="width:14px;height:14px;border-radius:50%;background:{{ statusDot }};box-shadow:0 0 0 5px {{ statusRing }};flex:none;animation:{{ statusAnim }}"></div>
+<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:16px;color:{{ statusFg }}">{{ statusTitle }}</div><div style="font-size:13.5px;color:{{ statusFg2 }};margin-top:2px;line-height:1.4">{{ statusSub }}</div></div>
+<sc-if value="{{ geoOk }}" hint-placeholder-val="{{ true }}"><div style="font-family:Nunito,sans-serif;font-weight:900;font-size:22px;color:{{ statusFg }};font-variant-numeric:tabular-nums">{{ distance }}<span style="font-size:13px;font-weight:700;margin-left:1px">m</span></div></sc-if>
+<sc-if value="{{ geoDenied }}" hint-placeholder-val="{{ false }}"><div sc-camel-on-click="{{ retryGeo }}" style="height:36px;padding:0 14px;border-radius:999px;background:#fff;color:#8E2A22;font-weight:700;font-size:13px;display:flex;align-items:center;cursor:pointer;flex:none">{{ T.retry }}</div></sc-if>
+</div>
+<sc-if value="{{ outOfRange }}" hint-placeholder-val="{{ false }}">
+<div style="margin:12px 22px 0;height:140px;border-radius:22px;position:relative;overflow:hidden;background:repeating-linear-gradient(135deg,#E9ECF1 0 10px,#F3F5F8 10px 20px);border:1px solid #E3E6EC">
+<div style="position:absolute;top:12px;left:14px;font:600 11px ui-monospace,Menlo,monospace;color:#8A91A0">{{ T.mapLabel }}</div>
+<div style="position:absolute;left:38%;top:54%;width:{{ zoneDiam }};height:{{ zoneDiam }};border-radius:50%;border:2px dashed #2E9E5B;transform:translate(-50%,-50%);background:rgba(46,158,91,.08)"></div>
+<div style="position:absolute;left:38%;top:54%;width:14px;height:14px;border-radius:50%;background:#1F5FD6;border:3px solid #fff;transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(0,0,0,.2)"></div>
+<div style="position:absolute;left:{{ youLeft }};top:38%;width:16px;height:16px;border-radius:50%;background:#D9453B;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:left .4s"></div>
+<div style="position:absolute;left:{{ youLeft }};top:38%;transform:translate(18px,-3px);font-weight:700;font-size:12px;color:#8E2A22;transition:left .4s">{{ T.you }}</div>
+</div>
+</sc-if>
+<div style="text-align:center;margin-top:30px"><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:64px;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums;color:{{ clockColor }}">{{ clockStr }}<span style="font-size:22px;font-weight:700;letter-spacing:0;color:#6B7280;margin-left:6px">{{ ampm }}</span></div><div style="font-size:14px;color:#6B7280;margin-top:8px;font-weight:600;padding:0 22px">{{ clockSub }}</div></div>
+<div style="margin:26px 22px 0">
+<div sc-camel-on-click="{{ primaryAction }}" style="height:76px;border-radius:26px;background:{{ primaryBg }};color:{{ primaryFg }};display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:22px;line-height:1.1;box-shadow:{{ primaryShadow }};cursor:pointer;transition:background .3s,box-shadow .3s" style-active="transform:scale(.985)"><span>{{ primaryLabel }}</span><sc-if value="{{ locked }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Nunito Sans','Noto Sans SC',sans-serif;font-weight:700;font-size:12px;letter-spacing:.6px;text-transform:uppercase;margin-top:4px">{{ lockedLabel }}</span></sc-if></div>
+<sc-if value="{{ outOfRange }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:14px;text-align:center;font-size:14px;line-height:1.5;color:#6B7280;padding:0 6px;text-wrap:pretty">{{ walkText }} <span sc-camel-on-click="{{ goFixReq }}" style="color:#1F5FD6;font-weight:700;cursor:pointer">{{ T.cantGetThere }}</span></div>
+</sc-if>
+<sc-if value="{{ poorAcc }}" hint-placeholder-val="{{ false }}"><div style="margin-top:12px;padding:12px 16px;border-radius:16px;background:#FFF4DF;color:#8A5A0E;font-size:13px;font-weight:700;text-align:center">{{ T.poorAcc }}</div></sc-if>
+</div>
+<div style="margin:24px 22px 0;padding:6px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #F0F1F4"><div style="font-weight:700;font-size:15px">{{ T.todayPunches }}</div><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:16px">{{ todayWorked }}</div></div>
+<sc-if value="{{ noPunchToday }}" hint-placeholder-val="{{ true }}"><div style="padding:14px 0;font-size:14px;color:#8A91A0">{{ T.notClockedIn }}</div></sc-if>
+<sc-for list="{{ todayPunches }}" as="p" hint-placeholder-count="0">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #F0F1F4"><div style="width:10px;height:10px;border-radius:50%;background:{{ p.color }};flex:none"></div><div style="flex:1;font-weight:700;font-size:15px">{{ p.label }}</div><div style="font-size:13px;color:#6B7280">{{ p.meta }}</div><div style="font-weight:700;font-size:15px;font-variant-numeric:tabular-nums">{{ p.time }}</div></div>
+</sc-for>
+</div>
+<div style="margin:12px 22px 0;padding:16px 18px;border-radius:22px;background:#fff;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<div><div style="font-size:13px;color:#6B7280;font-weight:600">{{ T.yesterday }}</div><div style="font-weight:700;font-size:15px;margin-top:2px">{{ yRange }}</div></div><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:18px">{{ yTotal }}</div>
+</div>
+</sc-if>
+</sc-if>
+
+<!-- HISTORY TAB -->
+<sc-if value="{{ tabHistory }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="History" style="padding:calc(22px + env(safe-area-inset-top)) 22px 0"><div style="font-size:14px;color:#6B7280;font-weight:600">{{ T.thisWeek }}</div><div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.3px">{{ T.history }}</div><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:22px">{{ weekTotal }}</div></div></div>
+<div style="margin:18px 22px 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+<div style="padding:14px;border-radius:18px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)"><div style="font-size:12px;color:#6B7280;font-weight:600">{{ T.daysWorked }}</div><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:20px;margin-top:2px">{{ weekDays }}</div></div>
+<div style="padding:14px;border-radius:18px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)"><div style="font-size:12px;color:#6B7280;font-weight:600">{{ T.avgIn }}</div><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:20px;margin-top:2px">{{ weekAvgIn }}</div></div>
+<div style="padding:14px;border-radius:18px;background:{{ missTileBg }};box-shadow:0 1px 2px rgba(0,0,0,.04)"><div style="font-size:12px;color:{{ missTileFg2 }};font-weight:600">{{ T.missing }}</div><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:20px;margin-top:2px;color:{{ missTileFg }}">{{ weekMissing }}</div></div>
+</div>
+<div style="margin:16px 22px 0;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ days }}" as="d" hint-placeholder-count="5">
+<div style="padding:14px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div style="font-weight:700;font-size:15px">{{ d.label }}</div><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:17px;color:{{ d.totalFg }}">{{ d.total }}</div></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+<sc-for list="{{ d.chips }}" as="c" hint-placeholder-count="2"><div style="padding:6px 10px;border-radius:999px;background:{{ c.bg }};color:{{ c.fg }};font-size:12px;font-weight:700">{{ c.text }}</div></sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- REQUESTS TAB -->
+<sc-if value="{{ tabRequests }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Requests" style="padding:calc(22px + env(safe-area-inset-top)) 22px 0;display:flex;justify-content:space-between;align-items:flex-end;gap:12px"><div><div style="font-size:14px;color:#6B7280;font-weight:600">{{ T.leaveAndFix }}</div><div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.3px">{{ T.requests }}</div></div><div sc-camel-on-click="{{ goNewReq }}" style="height:44px;padding:0 16px;border-radius:999px;background:#141A2A;color:#fff;display:flex;align-items:center;font-weight:700;font-size:14px;cursor:pointer;flex:none">{{ T.newRequest }}</div></div>
+<div style="margin:18px 22px 0;display:flex;flex-direction:column;gap:10px">
+<sc-if value="{{ noMyReqs }}" hint-placeholder-val="{{ false }}"><div style="padding:30px 18px;border-radius:22px;border:2px dashed #C6CAD2;text-align:center;color:#6B7280;font-size:14px;line-height:1.5;text-wrap:pretty">{{ T.noRequests }}</div></sc-if>
+<sc-for list="{{ myReqs }}" as="q" hint-placeholder-count="2">
+<div style="padding:16px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div style="font-weight:700;font-size:15px">{{ q.title }}</div><div style="padding:5px 10px;border-radius:999px;background:{{ q.badgeBg }};color:{{ q.badgeFg }};font-size:12px;font-weight:700;white-space:nowrap">{{ q.badge }}</div></div>
+<div style="font-size:14px;color:#4B5563;margin-top:6px;line-height:1.5">{{ q.detail }}</div>
+<sc-if value="{{ q.reason }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#6B7280;margin-top:8px;padding:10px 12px;border-radius:12px;background:#F6F7F9;line-height:1.45">{{ q.reason }}</div></sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- ME TAB -->
+<sc-if value="{{ tabMe }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Me" style="padding:calc(34px + env(safe-area-inset-top)) 22px 0;display:flex;flex-direction:column;align-items:center;text-align:center">
+<div style="width:84px;height:84px;border-radius:50%;background:#DCE7FB;color:#1F5FD6;font-weight:800;font-size:28px;display:flex;align-items:center;justify-content:center;font-family:Nunito,'Noto Sans SC',sans-serif">{{ myInit }}</div>
+<div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:24px;margin-top:14px">{{ myName }}</div>
+<div style="font-size:14px;color:#6B7280;font-weight:600;margin-top:3px">{{ myRoleLine }}</div>
+</div>
+<div style="margin:26px 22px 0;padding:6px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<div style="display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #F0F1F4;font-size:15px"><span style="color:#6B7280;font-weight:600">{{ T.site }}</span><span style="font-weight:700;text-align:right">{{ mySiteName }}</span></div>
+<div style="display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #F0F1F4;font-size:15px"><span style="color:#6B7280;font-weight:600">{{ T.radius }}</span><span style="font-weight:700">{{ mySiteRadius }} m</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F0F1F4;font-size:15px"><span style="color:#6B7280;font-weight:600">{{ T.language }}</span><div style="display:flex;gap:2px;padding:3px;border-radius:999px;background:#F0F1F4"><sc-for list="{{ langOpts }}" as="l" hint-placeholder-count="3"><div sc-camel-on-click="{{ l.pick }}" style="height:32px;padding:0 12px;border-radius:999px;background:{{ l.bg }};color:{{ l.fg }};display:flex;align-items:center;font-weight:700;font-size:13px;cursor:pointer">{{ l.label }}</div></sc-for></div></div>
+<div style="display:flex;justify-content:space-between;gap:12px;padding:14px 0;font-size:15px"><span style="color:#6B7280;font-weight:600">{{ T.dataConn }}</span><span style="font-weight:700;color:{{ connFg }}">{{ connLabel }}</span></div>
+</div>
+<sc-if value="{{ isAdminUser }}" hint-placeholder-val="{{ false }}">
+<div style="margin:14px 22px 0;padding:16px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<div style="font-weight:700;font-size:15px">{{ T.sbTitle }}</div>
+<div style="font-size:13px;color:#6B7280;line-height:1.5;margin-top:4px;text-wrap:pretty">{{ T.sbIntro }}</div>
+<input value="{{ sbUrl }}" sc-camel-on-change="{{ setSbUrl }}" placeholder="https://xxxx.supabase.co" sc-camel-auto-capitalize="off" style="margin-top:12px;width:100%;height:48px;border-radius:14px;border:2px solid #E3E6EC;background:#F6F7F9;padding:0 14px;font-size:14px;font-weight:600;color:#141A2A;box-sizing:border-box">
+<input value="{{ sbKey }}" sc-camel-on-change="{{ setSbKey }}" placeholder="anon public key" sc-camel-auto-capitalize="off" style="margin-top:8px;width:100%;height:48px;border-radius:14px;border:2px solid #E3E6EC;background:#F6F7F9;padding:0 14px;font-size:14px;font-weight:600;color:#141A2A;box-sizing:border-box">
+<sc-if value="{{ sbErr }}" hint-placeholder-val="{{ false }}"><div style="margin-top:8px;font-size:13px;color:#8E2A22;font-weight:700">{{ sbErr }}</div></sc-if>
+<div style="display:flex;gap:8px;margin-top:10px"><div sc-camel-on-click="{{ sbConnect }}" style="flex:1;height:48px;border-radius:16px;background:#1F5FD6;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer">{{ sbBtn }}</div><sc-if value="{{ sbOn }}" hint-placeholder-val="{{ false }}"><div sc-camel-on-click="{{ sbDisconnect }}" style="flex:1;height:48px;border-radius:16px;border:2px solid #E3E6EC;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;box-sizing:border-box">{{ T.disconnect }}</div></sc-if></div>
+</div>
+</sc-if>
+<div style="margin:14px 22px 0;display:flex;flex-direction:column;gap:10px">
+<sc-if value="{{ canManage }}" hint-placeholder-val="{{ false }}"><div sc-camel-on-click="{{ goAdmin }}" style="height:56px;border-radius:20px;background:#141A2A;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer">{{ openMgrLabel }}</div></sc-if>
+<div sc-camel-on-click="{{ signOut }}" style="height:56px;border-radius:20px;border:2px solid #E3E6EC;color:#141A2A;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer;box-sizing:border-box">{{ T.signOut }}</div>
+</div>
+</sc-if>
+
+</div>
+<div style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));width:min(calc(100% - 44px),436px);height:58px;border-radius:30px;background:#141A2A;display:flex;align-items:center;padding:5px;gap:4px;box-sizing:border-box;box-shadow:0 10px 30px rgba(20,26,42,.25);z-index:20">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><div sc-camel-on-click="{{ t.go }}" style="flex:1;height:48px;border-radius:26px;background:{{ t.bg }};color:{{ t.fg }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;transition:background .2s;position:relative">{{ t.label }}<sc-if value="{{ t.dot }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:10px;right:14px;width:8px;height:8px;border-radius:50%;background:#E39B1C"></div></sc-if></div></sc-for>
+</div>
+</sc-if>
+
+<!-- NEW REQUEST -->
+<sc-if value="{{ isNewReq }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="New request" style="min-height:100dvh;display:flex;flex-direction:column">
+<div style="padding:calc(18px + env(safe-area-inset-top)) 22px 0;display:flex;align-items:center;gap:12px"><div sc-camel-on-click="{{ goRequests }}" style="width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);flex:none"><div style="width:10px;height:10px;border-left:2.5px solid #141A2A;border-bottom:2.5px solid #141A2A;transform:rotate(45deg);margin-left:4px"></div></div><div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:22px">{{ T.newRequestTitle }}</div></div>
+<div style="flex:1;padding:0 22px">
+<div style="font-weight:700;font-size:15px;margin-top:22px">{{ T.reqType }}</div>
+<div style="display:flex;gap:4px;padding:4px;border-radius:999px;background:#F0F1F4;margin-top:10px">
+<sc-for list="{{ kindOpts }}" as="o" hint-placeholder-count="2"><div sc-camel-on-click="{{ o.pick }}" style="flex:1;height:44px;border-radius:999px;background:{{ o.bg }};color:{{ o.fg }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s">{{ o.label }}</div></sc-for>
+</div>
+<div style="font-weight:700;font-size:15px;margin-top:22px">{{ T.date }}</div>
+<input type="date" value="{{ rq.date }}" sc-camel-on-change="{{ setRqDate }}" style="margin-top:10px;width:100%;height:52px;border-radius:16px;border:2px solid #E3E6EC;background:#fff;padding:0 14px;font-size:16px;font-weight:700;color:#141A2A;box-sizing:border-box">
+<sc-if value="{{ rqIsFix }}" hint-placeholder-val="{{ true }}">
+<div style="font-weight:700;font-size:15px;margin-top:22px">{{ T.punchType }}</div>
+<div style="display:flex;gap:4px;padding:4px;border-radius:999px;background:#F0F1F4;margin-top:10px">
+<sc-for list="{{ ptOpts }}" as="o" hint-placeholder-count="2"><div sc-camel-on-click="{{ o.pick }}" style="flex:1;height:44px;border-radius:999px;background:{{ o.bg }};color:{{ o.fg }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s">{{ o.label }}</div></sc-for>
+</div>
+<div style="font-weight:700;font-size:15px;margin-top:22px">{{ T.time }}</div>
+<input type="time" value="{{ rq.time }}" sc-camel-on-change="{{ setRqTime }}" style="margin-top:10px;width:100%;height:52px;border-radius:16px;border:2px solid #E3E6EC;background:#fff;padding:0 14px;font-size:16px;font-weight:700;color:#141A2A;box-sizing:border-box">
+</sc-if>
+<sc-if value="{{ rqIsLeave }}" hint-placeholder-val="{{ false }}">
+<div style="font-weight:700;font-size:15px;margin-top:22px">{{ T.leaveDays }}</div>
+<div style="display:flex;align-items:center;gap:14px;margin-top:10px"><div sc-camel-on-click="{{ rqDaysLess }}" style="width:48px;height:48px;border-radius:50%;background:#fff;border:2px solid #E3E6EC;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;cursor:pointer;user-select:none;box-sizing:border-box">−</div><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:28px;min-width:40px;text-align:center">{{ rq.days }}</div><div sc-camel-on-click="{{ rqDaysMore }}" style="width:48px;height:48px;border-radius:50%;background:#fff;border:2px solid #E3E6EC;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;cursor:pointer;user-select:none;box-sizing:border-box">+</div><div style="font-size:14px;color:#6B7280;font-weight:600">{{ rqRange }}</div></div>
+<div style="font-weight:700;font-size:15px;margin-top:22px">{{ T.leaveHours }}</div>
+<div style="display:flex;align-items:center;gap:14px;margin-top:10px"><div sc-camel-on-click="{{ rqHoursLess }}" style="width:48px;height:48px;border-radius:50%;background:#fff;border:2px solid #E3E6EC;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;cursor:pointer;user-select:none;box-sizing:border-box">−</div><div style="font-family:Nunito,sans-serif;font-weight:800;font-size:28px;min-width:40px;text-align:center">{{ rq.hours }}<span style="font-size:14px;color:#6B7280;margin-left:2px">h</span></div><div sc-camel-on-click="{{ rqHoursMore }}" style="width:48px;height:48px;border-radius:50%;background:#fff;border:2px solid #E3E6EC;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;cursor:pointer;user-select:none;box-sizing:border-box">+</div><div style="display:flex;gap:4px;padding:3px;border-radius:999px;background:#F0F1F4"><sc-for list="{{ rqHourPresets }}" as="o" hint-placeholder-count="2"><div sc-camel-on-click="{{ o.pick }}" style="height:34px;padding:0 12px;border-radius:999px;background:{{ o.bg }};color:{{ o.fg }};display:flex;align-items:center;font-weight:700;font-size:13px;cursor:pointer">{{ o.label }}</div></sc-for></div></div>
+<div style="margin-top:12px;padding:12px 16px;border-radius:16px;background:#DCE7FB;color:#1747A6;font-size:14px;font-weight:700">{{ rqTotal }}</div>
+</sc-if>
+<div style="font-weight:700;font-size:15px;margin-top:22px">{{ T.reason }}</div>
+<textarea value="{{ rq.reason }}" sc-camel-on-change="{{ setRqReason }}" placeholder="{{ T.reasonPh }}" style="margin-top:10px;width:100%;min-height:96px;box-sizing:border-box;border-radius:18px;border:2px solid #E3E6EC;padding:14px 16px;font-size:15px;line-height:1.45;color:#141A2A;background:#fff;resize:none"></textarea>
+<div style="height:20px"></div>
+</div>
+<div style="padding:12px 22px calc(24px + env(safe-area-inset-bottom))"><div sc-camel-on-click="{{ submitReq }}" style="height:64px;border-radius:24px;background:{{ rqSubmitBg }};color:{{ rqSubmitFg }};display:flex;align-items:center;justify-content:center;font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:18px;cursor:pointer;transition:all .2s">{{ T.send }}</div></div>
+</div>
+</sc-if>
+
+<!-- ADMIN -->
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Admin" style="min-height:100dvh;display:flex;flex-direction:column;background:#0F1B3D;color:#fff">
+<div style="padding:calc(18px + env(safe-area-inset-top)) 22px 0;display:flex;align-items:center;justify-content:space-between;gap:12px">
+<div style="display:flex;align-items:center;gap:12px;min-width:0"><div sc-camel-on-click="{{ goMe }}" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none"><div style="width:10px;height:10px;border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(45deg);margin-left:4px"></div></div><div style="min-width:0"><div style="font-size:13px;color:#9DB2E0;font-weight:600">{{ myRoleName }} · {{ myName }}</div><div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ mTitle }}</div></div></div>
+<div style="padding:8px 14px;border-radius:999px;background:{{ mBadgeBg }};color:#141A2A;font-weight:800;font-size:14px;white-space:nowrap">{{ mBadge }}</div>
+</div>
+<div style="margin:18px 22px 0;display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.1);overflow:auto;scrollbar-width:none">
+<sc-for list="{{ mTabs }}" as="t" hint-placeholder-count="5"><div sc-camel-on-click="{{ t.go }}" style="flex:1 0 auto;height:40px;padding:0 12px;border-radius:999px;background:{{ t.bg }};color:{{ t.fg }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;cursor:pointer;transition:background .2s;white-space:nowrap">{{ t.label }}</div></sc-for>
+</div>
+<div style="flex:1;margin-top:18px;background:#F6F7F9;border-radius:30px 30px 0 0;color:#141A2A;padding:22px 16px calc(50px + env(safe-area-inset-bottom))">
+
+<sc-if value="{{ noScope }}" hint-placeholder-val="{{ false }}"><div style="margin-bottom:14px;padding:26px 18px;border-radius:22px;border:2px dashed #C6CAD2;text-align:center;color:#6B7280;font-size:14px;line-height:1.5;text-wrap:pretty">{{ T.noMembers }}</div></sc-if>
+
+<!-- TODAY -->
+<sc-if value="{{ mToday }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+<div style="padding:14px;border-radius:18px;background:#E6F6EC"><div style="font-size:12px;color:#2F7A4F;font-weight:700">{{ T.working }}</div><div style="font-family:Nunito,sans-serif;font-weight:900;font-size:26px;color:#17603A;line-height:1.1;margin-top:2px">{{ teamOn }}</div></div>
+<div style="padding:14px;border-radius:18px;background:#DCE7FB"><div style="font-size:12px;color:#1747A6;font-weight:700">{{ T.left }}</div><div style="font-family:Nunito,sans-serif;font-weight:900;font-size:26px;color:#1747A6;line-height:1.1;margin-top:2px">{{ teamLeft }}</div></div>
+<div style="padding:14px;border-radius:18px;background:#fff"><div style="font-size:12px;color:#6B7280;font-weight:700">{{ T.off }}</div><div style="font-family:Nunito,sans-serif;font-weight:900;font-size:26px;color:#141A2A;line-height:1.1;margin-top:2px">{{ teamOff }}</div></div>
+</div>
+<div style="padding:6px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<sc-for list="{{ roster }}" as="m" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #F0F1F4">
+<div style="width:42px;height:42px;border-radius:50%;background:#DCE7FB;color:#1F5FD6;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none;position:relative">{{ m.init }}<div style="position:absolute;right:-1px;bottom:-1px;width:13px;height:13px;border-radius:50%;background:{{ m.dot }};border:2.5px solid #fff"></div></div>
+<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px">{{ m.name }}</div><div style="font-size:13px;color:#6B7280;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.sub }}</div></div>
+<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:{{ m.fg }}">{{ m.state }}</div><div style="font-size:12px;color:#6B7280;margin-top:1px">{{ m.since }}</div></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- ATTENDANCE -->
+<sc-if value="{{ mAtt }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px">
+<div sc-camel-on-click="{{ attPrev }}" style="width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)"><div style="width:9px;height:9px;border-left:2.5px solid #141A2A;border-bottom:2.5px solid #141A2A;transform:rotate(45deg);margin-left:3px"></div></div>
+<div style="text-align:center"><div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:18px">{{ attLabel }}</div><div style="font-size:12px;color:#6B7280;font-weight:600">{{ attSummary }}</div></div>
+<div sc-camel-on-click="{{ attNext }}" style="width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)"><div style="width:9px;height:9px;border-right:2.5px solid #141A2A;border-top:2.5px solid #141A2A;transform:rotate(45deg);margin-right:3px"></div></div>
+</div>
+<div style="border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);overflow:hidden">
+<div style="display:grid;grid-template-columns:1.6fr 1fr 1fr .9fr;gap:4px;padding:10px 16px;background:#F6F7F9;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.3px"><div>{{ T.employee }}</div><div style="text-align:right">{{ T.clockIn }}</div><div style="text-align:right">{{ T.clockOut }}</div><div style="text-align:right">{{ T.hours }}</div></div>
+<sc-for list="{{ attRows }}" as="r" hint-placeholder-count="6">
+<div style="display:grid;grid-template-columns:1.6fr 1fr 1fr .9fr;gap:4px;padding:12px 16px;border-top:1px solid #F0F1F4;font-size:13px;font-variant-numeric:tabular-nums;align-items:center"><div style="min-width:0"><div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div><div style="font-size:11px;color:#6B7280">{{ r.site }}</div></div><div style="text-align:right;color:{{ r.inFg }};font-weight:600">{{ r.in }}</div><div style="text-align:right;color:{{ r.outFg }};font-weight:600">{{ r.out }}</div><div style="text-align:right;font-weight:800;font-family:Nunito,sans-serif;font-size:14px;color:{{ r.hFg }}">{{ r.hours }}</div></div>
+</sc-for>
+</div>
+<div style="display:flex;gap:8px;margin-top:12px"><div sc-camel-on-click="{{ exportDay }}" style="flex:1;height:52px;border-radius:18px;border:2px solid #E3E6EC;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;box-sizing:border-box">{{ T.exportDay }}</div><div sc-camel-on-click="{{ exportMonth }}" style="flex:1;height:52px;border-radius:18px;background:#141A2A;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer">{{ T.exportMonth }}</div></div>
+</sc-if>
+
+<!-- APPROVALS -->
+<sc-if value="{{ mReq }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-if value="{{ noAllReqs }}" hint-placeholder-val="{{ false }}"><div style="padding:30px 18px;border-radius:22px;border:2px dashed #C6CAD2;text-align:center;color:#6B7280;font-size:14px">{{ T.noRequests }}</div></sc-if>
+<sc-for list="{{ allReqs }}" as="q" hint-placeholder-count="2">
+<div style="padding:16px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);opacity:{{ q.opacity }}">
+<div style="display:flex;gap:12px;align-items:center"><div style="width:42px;height:42px;border-radius:50%;background:#DCE7FB;color:#1F5FD6;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none">{{ q.init }}</div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px">{{ q.who }}</div><div style="font-size:13px;color:#6B7280;margin-top:1px">{{ q.title }}</div></div><div style="padding:5px 10px;border-radius:999px;background:{{ q.badgeBg }};color:{{ q.badgeFg }};font-size:12px;font-weight:700;white-space:nowrap">{{ q.badge }}</div></div>
+<div style="font-size:14px;color:#4B5563;line-height:1.5;margin-top:12px;padding:12px 14px;border-radius:14px;background:#F6F7F9"><div style="font-weight:700;color:#141A2A">{{ q.detail }}</div><sc-if value="{{ q.reason }}" hint-placeholder-val="{{ false }}"><div style="margin-top:4px">{{ q.reason }}</div></sc-if></div>
+<sc-if value="{{ q.pending }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:8px;margin-top:12px"><div sc-camel-on-click="{{ q.deny }}" style="flex:1;height:48px;border-radius:16px;border:2px solid #E3E6EC;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;box-sizing:border-box">{{ T.deny }}</div><div sc-camel-on-click="{{ q.approve }}" style="flex:1;height:48px;border-radius:16px;background:#2E9E5B;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer">{{ T.approve }}</div></div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- SITES -->
+<sc-if value="{{ mSites }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ siteListMode }}" hint-placeholder-val="{{ true }}">
+<div style="font-size:13px;color:#6B7280;line-height:1.5;padding:0 4px 14px;text-wrap:pretty">{{ T.sitesIntro }}</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ siteRows }}" as="z" hint-placeholder-count="2">
+<div sc-camel-on-click="{{ z.edit }}" style="padding:16px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04);display:flex;align-items:center;gap:14px;cursor:pointer">
+<div style="width:48px;height:48px;border-radius:50%;background:rgba(46,158,91,.1);border:2px dashed #2E9E5B;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:10px;height:10px;border-radius:50%;background:#1F5FD6"></div></div>
+<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px">{{ z.name }}</div><div style="font-size:13px;color:#6B7280;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ z.sub }}</div></div>
+<div style="font-family:Nunito,sans-serif;font-weight:800;font-size:18px">{{ z.radius }}<span style="font-size:12px;font-weight:700;color:#6B7280;margin-left:1px">m</span></div>
+<div style="width:9px;height:9px;border-right:2px solid #A3A9B5;border-bottom:2px solid #A3A9B5;transform:rotate(-45deg)"></div>
+</div>
+</sc-for>
+<div sc-camel-on-click="{{ newSite }}" style="height:56px;border-radius:22px;border:2px dashed #C6CAD2;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#6B7280;box-sizing:border-box;cursor:pointer">{{ T.newSite }}</div>
+</div>
+</sc-if>
+<sc-if value="{{ siteEditMode }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div sc-camel-on-click="{{ siteBack }}" style="width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);flex:none"><div style="width:9px;height:9px;border-left:2.5px solid #141A2A;border-bottom:2.5px solid #141A2A;transform:rotate(45deg);margin-left:3px"></div></div><input value="{{ se.name }}" sc-camel-on-change="{{ setSeName }}" placeholder="{{ T.siteName }}" style="flex:1;min-width:0;height:44px;border-radius:14px;border:2px solid #E3E6EC;padding:0 14px;font:800 17px Nunito,'Noto Sans SC',sans-serif;color:#141A2A;background:#fff;box-sizing:border-box"></div>
+<div style="height:180px;border-radius:22px;position:relative;overflow:hidden;background:repeating-linear-gradient(135deg,#E9ECF1 0 10px,#F3F5F8 10px 20px);border:1px solid #E3E6EC">
+<div style="position:absolute;top:12px;left:14px;font:600 11px ui-monospace,Menlo,monospace;color:#8A91A0">{{ T.mapLabel }}</div>
+<div style="position:absolute;left:50%;top:54%;width:{{ seDiam }};height:{{ seDiam }};border-radius:50%;border:2px dashed #2E9E5B;transform:translate(-50%,-50%);background:rgba(46,158,91,.1);transition:all .2s"></div>
+<div style="position:absolute;left:50%;top:54%;width:18px;height:18px;border-radius:50%;background:#1F5FD6;border:3px solid #fff;transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(0,0,0,.25)"></div>
+<div style="position:absolute;right:14px;bottom:12px;padding:5px 10px;border-radius:999px;background:#fff;font:700 12px 'Nunito Sans',sans-serif;color:#17603A;box-shadow:0 1px 3px rgba(0,0,0,.1)">{{ se.radius }} m</div>
+</div>
+<div style="margin-top:14px;padding:16px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px">{{ T.address }}</div>
+<input value="{{ se.address }}" sc-camel-on-change="{{ setSeAddress }}" style="margin-top:6px;width:100%;height:44px;border-radius:12px;border:2px solid #E3E6EC;background:#F6F7F9;padding:0 12px;font-size:14px;font-weight:600;color:#141A2A;box-sizing:border-box">
+<div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px;margin-top:14px">{{ T.latLng }}</div>
+<div style="display:flex;gap:8px;margin-top:6px"><input type="number" step="0.000001" value="{{ se.lat }}" sc-camel-on-change="{{ setSeLat }}" style="flex:1;min-width:0;height:44px;border-radius:12px;border:2px solid #E3E6EC;background:#F6F7F9;padding:0 12px;font:700 14px 'Nunito Sans',sans-serif;color:#141A2A;box-sizing:border-box"><input type="number" step="0.000001" value="{{ se.lng }}" sc-camel-on-change="{{ setSeLng }}" style="flex:1;min-width:0;height:44px;border-radius:12px;border:2px solid #E3E6EC;background:#F6F7F9;padding:0 12px;font:700 14px 'Nunito Sans',sans-serif;color:#141A2A;box-sizing:border-box"></div>
+<div sc-camel-on-click="{{ seUseHere }}" style="margin-top:10px;height:48px;border-radius:16px;background:#DCE7FB;color:#1747A6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer">{{ seHereLabel }}</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px"><div style="font-weight:700;font-size:15px">{{ T.radius }}</div><div style="display:flex;align-items:baseline;gap:4px"><input type="number" min="5" max="500" value="{{ se.radius }}" sc-camel-on-change="{{ setSeRadius }}" style="width:72px;height:44px;border-radius:12px;border:2px solid #E3E6EC;background:#F6F7F9;text-align:right;padding:0 10px;font:800 22px Nunito,sans-serif;color:#141A2A;box-sizing:border-box"><span style="font-size:13px;color:#6B7280;font-weight:700">m</span></div></div>
+<input type="range" min="5" max="100" step="1" value="{{ se.radius }}" sc-camel-on-change="{{ setSeRadius }}" style="width:100%;margin:12px 0 4px">
+<div style="display:flex;justify-content:space-between;font:600 11px ui-monospace,Menlo,monospace;color:#8A91A0"><span>5 m · {{ T.strict }}</span><span>100 m · {{ T.wide }}</span></div>
+<div sc-camel-on-click="{{ seToggleTol }}" style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid #F0F1F4;cursor:pointer">
+<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px">{{ T.tolerance }}</div><div style="font-size:13px;color:#6B7280;margin-top:1px;line-height:1.4">{{ T.toleranceSub }}</div></div>
+<div style="width:50px;height:30px;border-radius:999px;background:{{ seTolBg }};position:relative;flex:none;transition:background .2s"><div style="position:absolute;top:3px;left:{{ seTolKnob }};width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s"></div></div>
+</div>
+</div>
+<div style="display:flex;gap:8px;margin-top:12px"><sc-if value="{{ seCanDelete }}" hint-placeholder-val="{{ false }}"><div sc-camel-on-click="{{ seDelete }}" style="flex:1;height:56px;border-radius:20px;border:2px solid #F3C3BE;color:#8E2A22;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer;box-sizing:border-box">{{ T.remove }}</div></sc-if><div sc-camel-on-click="{{ seSave }}" style="flex:2;height:56px;border-radius:20px;background:#1F5FD6;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 10px 24px rgba(31,95,214,.25)">{{ T.save }}</div></div>
+</sc-if>
+</sc-if>
+
+<!-- TEAM -->
+<sc-if value="{{ mTeam }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ empListMode }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 4px"><div style="font-size:13px;color:#6B7280;font-weight:600">{{ empCountText }}</div><div sc-camel-on-click="{{ newEmp }}" style="height:40px;padding:0 14px;border-radius:999px;background:#141A2A;color:#fff;display:flex;align-items:center;font-weight:700;font-size:13px;cursor:pointer">{{ T.addEmployee }}</div></div>
+<div style="padding:6px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<sc-for list="{{ empRows }}" as="m" hint-placeholder-count="6">
+<div sc-camel-on-click="{{ m.edit }}" style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #F0F1F4;cursor:pointer">
+<div style="width:42px;height:42px;border-radius:50%;background:#DCE7FB;color:#1F5FD6;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none">{{ m.init }}</div>
+<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px">{{ m.name }}</div><div style="font-size:13px;color:#6B7280;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.sub }}</div></div>
+<sc-if value="{{ m.badge }}" hint-placeholder-val="{{ false }}"><div style="padding:4px 9px;border-radius:999px;background:{{ m.badgeBg }};color:#141A2A;font-size:11px;font-weight:800;white-space:nowrap;flex:none">{{ m.badge }}</div></sc-if>
+<div style="width:9px;height:9px;border-right:2px solid #A3A9B5;border-bottom:2px solid #A3A9B5;transform:rotate(-45deg)"></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ empEditMode }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div sc-camel-on-click="{{ empBack }}" style="width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)"><div style="width:9px;height:9px;border-left:2.5px solid #141A2A;border-bottom:2.5px solid #141A2A;transform:rotate(45deg);margin-left:3px"></div></div><div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:18px">{{ empEditTitle }}</div></div>
+<div style="padding:16px 18px;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+<div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px">{{ T.name }}</div>
+<input value="{{ ee.name }}" sc-camel-on-change="{{ setEeName }}" style="margin-top:6px;width:100%;height:48px;border-radius:12px;border:2px solid #E3E6EC;background:#F6F7F9;padding:0 12px;font-size:16px;font-weight:700;color:#141A2A;box-sizing:border-box">
+<div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px;margin-top:14px">{{ T.employeeId }}</div>
+<input value="{{ ee.id }}" sc-camel-on-change="{{ setEeId }}" disabled="{{ eeIdLocked }}" sc-camel-input-mode="numeric" style="margin-top:6px;width:100%;height:48px;border-radius:12px;border:2px solid #E3E6EC;background:#F6F7F9;padding:0 12px;font-size:16px;font-weight:700;color:{{ eeIdFg }};box-sizing:border-box">
+<sc-if value="{{ eeErr }}" hint-placeholder-val="{{ false }}"><div style="margin-top:8px;font-size:13px;color:#8E2A22;font-weight:700">{{ eeErr }}</div></sc-if>
+<div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px;margin-top:14px">{{ T.role }}</div>
+<div style="display:flex;gap:4px;padding:4px;border-radius:999px;background:#F0F1F4;margin-top:6px"><sc-for list="{{ roleOpts }}" as="o" hint-placeholder-count="3"><div sc-camel-on-click="{{ o.pick }}" style="flex:1;height:40px;border-radius:999px;background:{{ o.bg }};color:{{ o.fg }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer">{{ o.label }}</div></sc-for></div>
+<div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px;margin-top:14px">{{ T.site }}</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"><sc-for list="{{ eeSiteChips }}" as="c" hint-placeholder-count="2"><div sc-camel-on-click="{{ c.pick }}" style="padding:10px 14px;border-radius:999px;background:{{ c.bg }};color:{{ c.fg }};border:2px solid {{ c.border }};font-weight:700;font-size:13px;cursor:pointer;box-sizing:border-box">{{ c.label }}</div></sc-for></div>
+<sc-if value="{{ eeIsEmp }}" hint-placeholder-val="{{ true }}">
+<div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px;margin-top:14px">{{ T.leaderOf }}</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"><sc-for list="{{ eeLeaderChips }}" as="c" hint-placeholder-count="2"><div sc-camel-on-click="{{ c.pick }}" style="padding:10px 14px;border-radius:999px;background:{{ c.bg }};color:{{ c.fg }};border:2px solid {{ c.border }};font-weight:700;font-size:13px;cursor:pointer;box-sizing:border-box">{{ c.label }}</div></sc-for></div>
+</sc-if>
+<sc-if value="{{ eeIsLead }}" hint-placeholder-val="{{ false }}">
+<div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px;margin-top:14px">{{ T.members }}</div>
+<div style="font-size:13px;color:#6B7280;margin-top:2px;line-height:1.4">{{ T.membersHint }}</div>
+<sc-if value="{{ eeNoAssignable }}" hint-placeholder-val="{{ false }}"><div style="margin-top:8px;font-size:13px;color:#8A91A0;font-weight:600">{{ T.noEmpsYet }}</div></sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><sc-for list="{{ eeMemberChips }}" as="c" hint-placeholder-count="3"><div sc-camel-on-click="{{ c.pick }}" style="padding:10px 14px;border-radius:999px;background:{{ c.bg }};color:{{ c.fg }};border:2px solid {{ c.border }};font-weight:700;font-size:13px;cursor:pointer;box-sizing:border-box">{{ c.label }}</div></sc-for></div>
+</sc-if>
+<sc-if value="{{ eeCanExempt }}" hint-placeholder-val="{{ false }}">
+<div sc-camel-on-click="{{ eeToggleExempt }}" style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid #F0F1F4;cursor:pointer">
+<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px">{{ T.exempt }}</div><div style="font-size:13px;color:#6B7280;margin-top:1px;line-height:1.4">{{ T.exemptSub }}</div></div>
+<div style="width:50px;height:30px;border-radius:999px;background:{{ eeExBg }};position:relative;flex:none;transition:background .2s"><div style="position:absolute;top:3px;left:{{ eeExKnob }};width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s"></div></div>
+</div>
+</sc-if>
+</div>
+<div style="display:flex;gap:8px;margin-top:12px"><sc-if value="{{ eeCanDelete }}" hint-placeholder-val="{{ false }}"><div sc-camel-on-click="{{ eeDelete }}" style="flex:1;height:56px;border-radius:20px;border:2px solid #F3C3BE;color:#8E2A22;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer;box-sizing:border-box">{{ T.remove }}</div></sc-if><div sc-camel-on-click="{{ eeSave }}" style="flex:2;height:56px;border-radius:20px;background:#1F5FD6;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 10px 24px rgba(31,95,214,.25)">{{ T.save }}</div></div>
+</sc-if>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
+
+<!-- CONFIRM SHEET -->
+<sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+<div sc-camel-on-click="{{ closeSheet }}" style="position:fixed;inset:0;background:rgba(20,26,42,.45);z-index:30"></div>
+<div style="position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,480px);background:#fff;border-radius:32px 32px 0 0;padding:12px 22px calc(28px + env(safe-area-inset-bottom));box-sizing:border-box;z-index:31;box-shadow:0 -10px 40px rgba(0,0,0,.15)">
+<div style="width:40px;height:5px;border-radius:999px;background:#E3E6EC;margin:0 auto"></div>
+<sc-if value="{{ sheetConfirm }}" hint-placeholder-val="{{ true }}">
+<div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:22px;margin-top:18px">{{ sheetTitle }}</div>
+<div style="margin-top:14px;padding:4px 16px;border-radius:18px;background:#F6F7F9">
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #E9EBEF;font-size:15px"><span style="color:#6B7280;font-weight:600">{{ T.time }}</span><span style="font-weight:700;font-variant-numeric:tabular-nums">{{ nowStr }}</span></div>
+<div style="display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #E9EBEF;font-size:15px"><span style="color:#6B7280;font-weight:600">{{ T.site }}</span><span style="font-weight:700;text-align:right">{{ nearSiteName }} · {{ distance }} m</span></div>
+<div style="display:flex;justify-content:space-between;padding:12px 0;font-size:15px"><span style="color:#6B7280;font-weight:600">{{ T.employee }}</span><span style="font-weight:700">{{ myName }} · #{{ myId }}</span></div>
+</div>
+<div sc-camel-on-click="{{ confirmPunch }}" style="margin-top:18px;height:64px;border-radius:24px;background:{{ sheetBtnBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 10px 24px rgba(31,95,214,.28)" style-active="transform:scale(.985)">{{ sheetBtn }}</div>
+<div sc-camel-on-click="{{ closeSheet }}" style="margin-top:10px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#6B7280;cursor:pointer">{{ T.cancel }}</div>
+</sc-if>
+<sc-if value="{{ sheetDone }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;align-items:center;padding:28px 0 12px"><div style="width:84px;height:84px;border-radius:50%;background:#2E9E5B;display:flex;align-items:center;justify-content:center;animation:ef-pop .5s cubic-bezier(.2,.8,.2,1)"><div style="width:30px;height:16px;border-left:5px solid #fff;border-bottom:5px solid #fff;transform:rotate(-45deg) translate(3px,-4px)"></div></div><div style="font-family:Nunito,'Noto Sans SC',sans-serif;font-weight:800;font-size:24px;margin-top:18px">{{ doneTitle }}</div><div style="font-size:14px;color:#6B7280;margin-top:6px;font-weight:600;text-align:center">{{ doneSub }}</div></div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;top:calc(16px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:min(calc(100% - 44px),420px);padding:12px 18px;border-radius:18px;background:#141A2A;color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(20,26,42,.3);z-index:40;animation:ef-toast .25s ease-out"><div style="width:8px;height:8px;border-radius:50%;background:{{ toastDot }};flex:none"></div><span>{{ toast }}</span></div>
+</sc-if>
+
+</div>
