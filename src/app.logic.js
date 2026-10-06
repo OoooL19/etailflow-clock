@@ -94,7 +94,7 @@ const DICT = {
   exemptSub: ['开启后此人无需打卡，也不计入考勤和缺卡统计。', 'When on, this person does not clock in and is left out of attendance.', 'Si se activa, no ficha y no cuenta en la asistencia.'],
   exemptTitle: ['你无需打卡', "You don't need to clock in", 'No necesitas fichar'],
   exemptBody: ['你的账号已设为免打卡。可以在后台查看组员的考勤。', 'Your account is exempt from clocking in. Open the console to see your team.', 'Tu cuenta está exenta de fichar. Abre el panel para ver a tu equipo.'],
-  noMembers: ['还没有组员，请联系主管理员分配。', 'No team members yet — ask the main admin to assign them.', 'Aún sin miembros: pide al admin principal que los asigne.'],
+  noMembers: ['还没有组员。可以在“员工”里添加，或请主管理员分配。', 'No team members yet — add them under Team, or ask the main admin to assign them.', 'Aún sin miembros: agrégalos en Equipo o pide al admin principal que los asigne.'],
   lastAdmin: ['至少要保留一位主管理员', 'Keep at least one main admin', 'Debe quedar al menos un admin principal'],
   syncFail: ['同步失败，网络恢复后会自动重试', 'Sync failed — will retry when back online', 'Error de sincronización: se reintentará'],
   mToday: ['今日', 'Today', 'Hoy'], mAtt: ['考勤', 'Attendance', 'Asistencia'], mReq: ['审批', 'Requests', 'Solicitudes'], mSites: ['地点', 'Sites', 'Sitios'], mTeam: ['员工', 'Team', 'Equipo'],
@@ -226,7 +226,7 @@ class Component extends DCLogic {
   }
   errText(e) {
     if (e && e.network) return this.t('loginNet');
-    const k = { EF_PIN_WEAK: 'pinWeak', EF_PIN_OLD: 'pinOldBad', EF_RANGE: 'srvRange', EF_TIME: 'srvTime', EF_FORBIDDEN: 'srvForbidden', EF_LAST_ADMIN: 'lastAdmin', EF_IN_USE: 'siteInUse' }[e && e.code];
+    const k = { EF_PIN_WEAK: 'pinWeak', EF_PIN_OLD: 'pinOldBad', EF_RANGE: 'srvRange', EF_TIME: 'srvTime', EF_FORBIDDEN: 'srvForbidden', EF_LAST_ADMIN: 'lastAdmin', EF_IN_USE: 'siteInUse', EF_ID_TAKEN: 'idTaken' }[e && e.code];
     return this.t(k || 'srvRejected');
   }
   // Replace the local copy with what the server says this person may see.
@@ -438,11 +438,11 @@ class Component extends DCLogic {
     const scopeEmps = isAdm ? db.employees : db.employees.filter(e => e.leaderId === me.id);
     const scopeIds = {}; scopeEmps.forEach(e => { scopeIds[e.id] = true; });
     const tracked = scopeEmps.filter(e => !e.noPunch);
-    v.noScope = !scopeEmps.length; v.isLeadView = !isAdm;
+    v.noScope = !scopeEmps.length && st.mTab !== 'team'; v.isLeadView = !isAdm;
     const empName = id => (db.employees.find(e => e.id === id) || {}).name || '';
     const pendingAll = db.requests.filter(r => r.status === 'pending' && scopeIds[r.empId]).length;
-    const mt = (!isAdm && (st.mTab === 'sites' || st.mTab === 'team')) ? 'today' : st.mTab; v.mToday = mt === 'today'; v.mAtt = mt === 'att'; v.mReq = mt === 'req'; v.mSites = mt === 'sites'; v.mTeam = mt === 'team';
-    v.mTabs = [['today', T.mToday], ['att', T.mAtt], ['req', T.mReq], ['sites', T.mSites], ['team', T.mTeam]].filter(x => isAdm || (x[0] !== 'sites' && x[0] !== 'team')).map(([k, label]) => ({ label: k === 'req' && pendingAll ? label + ' · ' + pendingAll : label, bg: mt === k ? '#fff' : 'transparent', fg: mt === k ? '#0F1B3D' : 'rgba(255,255,255,.75)', go: () => this.setState({ mTab: k, se: null, ee: null }) }));
+    const mt = (!isAdm && st.mTab === 'sites') ? 'today' : st.mTab; v.mToday = mt === 'today'; v.mAtt = mt === 'att'; v.mReq = mt === 'req'; v.mSites = mt === 'sites'; v.mTeam = mt === 'team';
+    v.mTabs = [['today', T.mToday], ['att', T.mAtt], ['req', T.mReq], ['sites', T.mSites], ['team', T.mTeam]].filter(x => isAdm || x[0] !== 'sites').map(([k, label]) => ({ label: k === 'req' && pendingAll ? label + ' · ' + pendingAll : label, bg: mt === k ? '#fff' : 'transparent', fg: mt === k ? '#0F1B3D' : 'rgba(255,255,255,.75)', go: () => this.setState({ mTab: k, se: null, ee: null }) }));
     v.mTitle = { today: T.mToday, att: T.mAtt, req: T.mReq, sites: T.mSites, team: T.mTeam }[mt];
     v.mBadge = pendingAll ? pendingAll + ' ' + T.pending : this.fmtD(now, { month: 'short', day: 'numeric' }); v.mBadgeBg = pendingAll ? '#E39B1C' : '#58B4EA';
     const siteName = id => (db.sites.find(s => s.id === id) || {}).name || '—';
@@ -496,26 +496,26 @@ class Component extends DCLogic {
     }
 
     // team
-    const ee = st.ee; v.empListMode = !ee; v.empEditMode = !!ee; v.empCountText = this.t('employees_', { n: db.employees.length });
+    const ee = st.ee; v.empListMode = !ee; v.empEditMode = !!ee; const teamList = isAdm ? db.employees : scopeEmps; v.empCountText = this.t('employees_', { n: teamList.length });
     const membersOf = id => db.employees.filter(x => x.leaderId === id);
     const rank = r => r === 'admin' ? 0 : r === 'leader' ? 1 : 2;
-    v.empRows = [...db.employees].sort((a, b) => rank(a.role) - rank(b.role) || a.id.localeCompare(b.id, undefined, { numeric: true })).map(e => ({
+    v.empRows = [...teamList].sort((a, b) => rank(a.role) - rank(b.role) || a.id.localeCompare(b.id, undefined, { numeric: true })).map(e => ({
       id: e.id, name: e.name, init: this.init(e.name),
       sub: '#' + e.id + ' · ' + (e.role === 'leader' ? this.t('membersCount', { n: membersOf(e.id).length }) : siteName(e.siteId)) + (e.role === 'employee' && e.leaderId && empName(e.leaderId) ? ' · ' + this.t('leadLine', { n: empName(e.leaderId) }) : '') + (e.noPunch ? ' · ' + T.exempt : '') + (e.hasPin === false ? ' · ' + T.noPinYet : ''),
       badge: e.role === 'admin' ? T.admin : e.role === 'leader' ? T.leader : '', badgeBg: e.role === 'admin' ? '#58B4EA' : '#FFE1A8',
       edit: () => this.setState({ ee: Object.assign({}, e, { members: membersOf(e.id).map(x => x.id) }), eeErr: '' }) }));
-    v.newEmp = () => this.setState({ ee: { id: '', name: '', role: 'employee', siteId: db.sites[0].id, leaderId: null, noPunch: false, members: [], isNew: true }, eeErr: '' });
+    v.newEmp = () => this.setState({ ee: { id: '', name: '', role: 'employee', siteId: (mySite || db.sites[0]).id, leaderId: isAdm ? null : me.id, noPunch: false, members: [], isNew: true }, eeErr: '' });
     if (ee) {
       const setEe = patch => this.setState({ ee: Object.assign({}, ee, patch), eeErr: '' });
       v.ee = ee; v.eeErr = st.eeErr; v.empEditTitle = ee.isNew ? T.newEmployee : T.editEmployee; v.eeIdLocked = !ee.isNew; v.eeIdFg = ee.isNew ? '#141A2A' : '#8A91A0';
       v.setEeName = e => setEe({ name: e.target.value }); v.setEeId = e => setEe({ id: e.target.value.replace(/\s/g, '') });
       // PIN: required for a new person; for an existing one it resets their PIN. (Your own PIN is changed from "Me".)
-      v.eeShowPin = ee.isNew || ee.id !== me.id; v.eePinLabel = ee.isNew ? T.pinInitial : T.pinReset; v.eePin = ee.pin || '';
+      v.eeShowPin = isAdm ? (ee.isNew || ee.id !== me.id) : (ee.isNew || ee.hasPin === false); v.eePinLabel = ee.isNew || ee.hasPin === false ? T.pinInitial : T.pinReset; v.eePin = ee.pin || '';
       v.eePinRule = this.t('pinRule', { n: ee.role === 'employee' ? 4 : 6 }); v.setEePin = e => setEe({ pin: e.target.value.replace(/\s/g, '') });
       v.roleOpts = [['employee', T.roleEmp], ['leader', T.leader], ['admin', T.admin]].map(([k, label]) => ({ label, bg: ee.role === k ? '#fff' : 'transparent', fg: ee.role === k ? '#141A2A' : '#6B7280', pick: () => setEe({ role: k }) }));
       v.eeSiteChips = db.sites.map(s => ({ label: s.name, bg: ee.siteId === s.id ? '#DCE7FB' : '#fff', fg: ee.siteId === s.id ? '#1747A6' : '#141A2A', border: ee.siteId === s.id ? '#1F5FD6' : '#E3E6EC', pick: () => setEe({ siteId: s.id }) }));
       // Employee -> which team lead they report to
-      v.eeIsEmp = ee.role === 'employee'; v.eeIsLead = ee.role === 'leader'; v.eeCanExempt = ee.role !== 'employee';
+      v.eeShowRole = isAdm; v.eeIsEmp = isAdm && ee.role === 'employee'; v.eeIsLead = isAdm && ee.role === 'leader'; v.eeCanExempt = isAdm && ee.role !== 'employee';
       const chip = (label, on, pick) => ({ label, bg: on ? '#DCE7FB' : '#fff', fg: on ? '#1747A6' : '#141A2A', border: on ? '#1F5FD6' : '#E3E6EC', pick });
       v.eeLeaderChips = [chip(T.noLeader, !ee.leaderId, () => setEe({ leaderId: null }))].concat(db.employees.filter(e => e.role === 'leader' && e.id !== ee.id).map(e => chip(e.name, ee.leaderId === e.id, () => setEe({ leaderId: e.id }))));
       // Team lead -> which employees are on their team
@@ -523,7 +523,7 @@ class Component extends DCLogic {
       v.eeMemberChips = assignable.map(e => { const on = mem.indexOf(e.id) >= 0, other = !on && e.leaderId && e.leaderId !== ee.id ? empName(e.leaderId) : ''; return chip(e.name + (other ? ' · ' + this.t('leadLine', { n: other }) : ''), on, () => setEe({ members: on ? mem.filter(x => x !== e.id) : mem.concat(e.id) })); });
       v.eeNoAssignable = !assignable.length;
       v.eeToggleExempt = () => setEe({ noPunch: !ee.noPunch }); v.eeExBg = ee.noPunch ? '#1F5FD6' : '#C6CAD2'; v.eeExKnob = ee.noPunch ? '23px' : '3px';
-      v.eeCanDelete = !ee.isNew && ee.id !== me.id;
+      v.eeCanDelete = isAdm && !ee.isNew && ee.id !== me.id;
       v.eeDelete = () => { const changes = [['employees', ee.id, true]]; const employees = db.employees.filter(e => e.id !== ee.id).map(e => { if (e.leaderId !== ee.id) return e; const n = Object.assign({}, e, { leaderId: null }); changes.push(['employees', n]); return n; }); this.persist(Object.assign({}, db, { employees }), changes); this.setState({ ee: null }); };
       v.eeSave = () => {
         if (!ee.name.trim() || !ee.id) return this.setState({ eeErr: T.needFields });
@@ -531,8 +531,9 @@ class Component extends DCLogic {
         const newPin = v.eeShowPin ? (ee.pin || '') : '';
         if (ee.isNew && !newPin) return this.setState({ eeErr: T.pinNeed });
         if (newPin && newPin.length < (ee.role === 'employee' ? 4 : 6)) return this.setState({ eeErr: v.eePinRule });
-        const row = { id: ee.id, name: ee.name.trim(), role: ee.role, siteId: ee.siteId, leaderId: ee.role === 'employee' ? (ee.leaderId || null) : null, noPunch: ee.role !== 'employee' && !!ee.noPunch };
-        const changes = [['employees', row]], team = ee.role === 'leader' ? mem : [];
+        const row = isAdm ? { id: ee.id, name: ee.name.trim(), role: ee.role, siteId: ee.siteId, leaderId: ee.role === 'employee' ? (ee.leaderId || null) : null, noPunch: ee.role !== 'employee' && !!ee.noPunch }
+          : { id: ee.id, name: ee.name.trim(), role: 'employee', siteId: ee.siteId, leaderId: me.id, noPunch: false };  // a team lead only adds plain employees to their own team
+        const changes = [['employees', row]], team = isAdm && ee.role === 'leader' ? mem : [];
         const employees = (ee.isNew ? db.employees.concat(row) : db.employees.map(e => e.id === ee.id ? row : e)).map(e => {
           if (e.id === row.id) return e;
           let lid = e.leaderId || null;
@@ -540,7 +541,7 @@ class Component extends DCLogic {
           if (lid === (e.leaderId || null)) return e;
           const n = Object.assign({}, e, { leaderId: lid }); changes.push(['employees', n]); return n;
         });
-        if (!employees.some(e => e.role === 'admin')) return this.setState({ eeErr: T.lastAdmin });
+        if (isAdm && !employees.some(e => e.role === 'admin')) return this.setState({ eeErr: T.lastAdmin });
         this.persist(Object.assign({}, db, { employees }), changes);
         const ns = { ee: null }; if (row.id === me.id) ns.me = row; this.setState(ns); this.showToast(T.saved);
         // The PIN is never stored on this phone: it is sent straight to the server once the employee record is saved there.

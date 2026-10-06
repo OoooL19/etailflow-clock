@@ -324,8 +324,10 @@
 <div style="font-size:12px;color:#8A91A0;margin-top:4px;line-height:1.4">{{ eePinRule }}</div>
 </sc-if>
 <sc-if value="{{ eeErr }}" hint-placeholder-val="{{ false }}"><div style="margin-top:8px;font-size:13px;color:#8E2A22;font-weight:700">{{ eeErr }}</div></sc-if>
+<sc-if value="{{ eeShowRole }}" hint-placeholder-val="{{ true }}">
 <div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px;margin-top:14px">{{ T.role }}</div>
 <div style="display:flex;gap:4px;padding:4px;border-radius:999px;background:#F0F1F4;margin-top:6px"><sc-for list="{{ roleOpts }}" as="o" hint-placeholder-count="3"><div sc-camel-on-click="{{ o.pick }}" style="flex:1;height:40px;border-radius:999px;background:{{ o.bg }};color:{{ o.fg }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer">{{ o.label }}</div></sc-for></div>
+</sc-if>
 <div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px;margin-top:14px">{{ T.site }}</div>
 <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"><sc-for list="{{ eeSiteChips }}" as="c" hint-placeholder-count="2"><div sc-camel-on-click="{{ c.pick }}" style="padding:10px 14px;border-radius:999px;background:{{ c.bg }};color:{{ c.fg }};border:2px solid {{ c.border }};font-weight:700;font-size:13px;cursor:pointer;box-sizing:border-box">{{ c.label }}</div></sc-for></div>
 <sc-if value="{{ eeIsEmp }}" hint-placeholder-val="{{ true }}">

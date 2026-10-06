@@ -7,7 +7,7 @@
 --   * ef_login checks the employee's PIN (stored as a bcrypt hash) and returns a session token.
 --   * Every other function checks that token, then enforces the role rules here on the server:
 --       employee    -> own punches and requests only
---       team lead   -> also sees (read-only) the employees assigned to them
+--       team lead   -> also sees the employees assigned to them, and can add employees to their own team
 --       main admin  -> everything
 --   * 5 wrong PINs lock the account for 15 minutes.
 
@@ -158,6 +158,10 @@ begin
   elsif me.role = 'admin' and me.pin_hash is not null and not me.must_change then
     update employees set pin_hash = crypt(v_new, gen_salt('bf', 8)), must_change = true, claimable = false, failed = 0, locked_until = null where id = target.id;
     delete from ef_sessions where emp_id = target.id;
+  elsif me.role = 'leader' and me.pin_hash is not null and not me.must_change
+        and target.role = 'employee' and target."leaderId" = me.id and target.pin_hash is null then
+    -- a team lead gives a starting PIN to someone they just added (they cannot reset an existing PIN)
+    update employees set pin_hash = crypt(v_new, gen_salt('bf', 8)), must_change = true, claimable = false, failed = 0, locked_until = null where id = target.id;
   else
     raise exception 'EF_FORBIDDEN';
   end if;
@@ -251,6 +255,21 @@ begin
       values (v_id, left(btrim(p_row ->> 'name'), 120), left(coalesce(p_row ->> 'address', ''), 300), (p_row ->> 'lat')::double precision, (p_row ->> 'lng')::double precision,
               least(greatest(coalesce((p_row ->> 'radius')::int, 10), 1), 500), coalesce((p_row ->> 'tolerance')::boolean, true))
       on conflict (id) do update set name = excluded.name, address = excluded.address, lat = excluded.lat, lng = excluded.lng, radius = excluded.radius, tolerance = excluded.tolerance;
+    end if;
+
+  elsif p_table = 'employees' and me.role = 'leader' then
+    -- a team lead may add employees to their own team, and correct the name / site of their own members.
+    -- They cannot delete anyone, change roles, or touch people outside their team.
+    if p_del then raise exception 'EF_FORBIDDEN'; end if;
+    if v_id ~ '\s' or coalesce(btrim(p_row ->> 'name'), '') = '' then raise exception 'EF_INPUT'; end if;
+    if not exists (select 1 from sites where id = p_row ->> 'siteId') then raise exception 'EF_INPUT'; end if;
+    select * into old from employees where id = v_id;
+    if found then
+      if old.role <> 'employee' or old."leaderId" is distinct from me.id then raise exception 'EF_ID_TAKEN'; end if;
+      update employees set name = left(btrim(p_row ->> 'name'), 120), "siteId" = p_row ->> 'siteId' where id = v_id;
+    else
+      insert into employees (id, name, role, "siteId", "leaderId", "noPunch")
+      values (v_id, left(btrim(p_row ->> 'name'), 120), 'employee', p_row ->> 'siteId', me.id, false);
     end if;
 
   elsif p_table = 'employees' then
