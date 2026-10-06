@@ -387,11 +387,14 @@ class Component extends DCLogic {
 
     // history
     const dow = (now.getDay() + 6) % 7, weekStart = new Date(now); weekStart.setHours(0, 0, 0, 0); weekStart.setDate(weekStart.getDate() - dow);
+    // A day only counts as "missing" from the person's first-ever punch onward — nothing is owed before they started using the app.
+    const firstDay = {}; db.punches.forEach(p => { const k = S.dayKey(p.t); if (!firstDay[p.empId] || k < firstDay[p.empId]) firstDay[p.empId] = k; });
+    const started = (empId, key) => !!firstDay[empId] && key >= firstDay[empId];
     let wMs = 0, wDays = 0, wMiss = 0, inSum = 0, inN = 0; const days = [];
     for (let i = 0; i < 12; i++) {
       const d = new Date(now); d.setDate(d.getDate() - i); const key = S.dayKey(d), ps = this.dayPunches(me.id, key), isToday = i === 0, wknd = d.getDay() === 0 || d.getDay() === 6;
-      if (wknd && !ps.length) continue;
-      const ms = this.workedMs(ps, isToday ? now : null), open = ps.length && ps[ps.length - 1].type === 'in' && !isToday, none = !ps.length && !isToday && !exempt;
+      if (!ps.length && !isToday && (wknd || !started(me.id, key))) continue;
+      const ms = this.workedMs(ps, isToday ? now : null), open = ps.length && ps[ps.length - 1].type === 'in' && !isToday, none = !ps.length && !isToday && !exempt && started(me.id, key);
       if (d >= weekStart) { wMs += ms; if (ps.length) wDays++; if (open || none) wMiss++; const fi = ps.find(p => p.type === 'in'); if (fi) { const t = new Date(fi.t); inSum += t.getHours() * 60 + t.getMinutes(); inN++; } }
       const chips = ps.map(p => ({ text: this.t(p.type === 'in' ? 'inChip' : 'outChip', { t: this.fmtT(p.t) }), bg: p.viaRequest ? '#FFF4DF' : p.type === 'in' ? '#E6F6EC' : '#F0F1F4', fg: p.viaRequest ? '#8A5A0E' : p.type === 'in' ? '#17603A' : '#141A2A' }));
       if (open) chips.push({ text: T.missingOut, bg: '#FDE9E7', fg: '#8E2A22' }); if (none) chips.push({ text: T.noPunch, bg: '#FDE9E7', fg: '#8E2A22' }); if (isToday && !ps.length) chips.push({ text: T.notClockedIn, bg: '#F0F1F4', fg: '#6B7280' });
@@ -456,7 +459,7 @@ class Component extends DCLogic {
     // attendance
     const ak = st.attDate || todayKey, ad = this.dayFromKey(ak); let present = 0, miss = 0;
     v.attLabel = (ak === todayKey ? T.today + ' · ' : '') + this.fmtD(ad);
-    v.attRows = tracked.map(e => { const ps = this.dayPunches(e.id, ak), i = ps.find(p => p.type === 'in'), o = [...ps].reverse().find(p => p.type === 'out'); if (ps.length) present++; const bad = !ps.length || (i && !o && ak !== todayKey); if (bad) miss++; return { name: e.name, site: ps.length ? siteName(ps[0].siteId) : siteName(e.siteId), in: i ? this.fmtT(i.t) : '—', out: o ? this.fmtT(o.t) : '—', inFg: i ? '#141A2A' : '#C6CAD2', outFg: o ? '#141A2A' : (i && ak !== todayKey ? '#D9453B' : '#C6CAD2'), hours: ps.length ? this.fmtDur(this.workedMs(ps, ak === todayKey ? now : null)) : '—', hFg: bad ? '#8E2A22' : '#141A2A' }; });
+    v.attRows = tracked.map(e => { const ps = this.dayPunches(e.id, ak), i = ps.find(p => p.type === 'in'), o = [...ps].reverse().find(p => p.type === 'out'); if (ps.length) present++; const bad = (!ps.length && started(e.id, ak)) || (i && !o && ak !== todayKey); if (bad) miss++; return { name: e.name, site: ps.length ? siteName(ps[0].siteId) : siteName(e.siteId), in: i ? this.fmtT(i.t) : '—', out: o ? this.fmtT(o.t) : '—', inFg: i ? '#141A2A' : '#C6CAD2', outFg: o ? '#141A2A' : (i && ak !== todayKey ? '#D9453B' : '#C6CAD2'), hours: ps.length ? this.fmtDur(this.workedMs(ps, ak === todayKey ? now : null)) : '—', hFg: bad ? '#8E2A22' : '#141A2A' }; });
     v.attSummary = this.t('attSummary', { n: present, m: miss });
     v.attPrev = () => { const d = new Date(ad); d.setDate(d.getDate() - 1); this.setState({ attDate: S.dayKey(d) }); };
     v.attNext = () => { const d = new Date(ad); d.setDate(d.getDate() + 1); if (S.dayKey(d) <= todayKey) this.setState({ attDate: S.dayKey(d) }); };
